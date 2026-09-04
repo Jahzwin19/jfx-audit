@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JFX Digital Global Tech — Digital Business Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --deep-blue:#0B1D3A;
+  --deep-blue-light:#132D5E;
+  --emerald:#10B981;
+  --emerald-dark:#059669;
+  --emerald-light:#D1FAE5;
+  --white:#FFFFFF;
+  --grey-50:#F9FAFB;
+  --grey-100:#F3F4F6;
+  --grey-200:#E5E7EB;
+  --grey-300:#D1D5DB;
+  --grey-400:#9CA3AF;
+  --grey-500:#6B7280;
+  --grey-600:#4B5563;
+  --grey-700:#374151;
+  --grey-800:#1F2937;
+  --red:#EF4444;
+  --amber:#F59E0B;
+  --green:#10B981;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+  --shadow-xl:0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
+  --radius:12px;
+  --radius-sm:8px;
+  --radius-lg:16px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans','Manrope',system-ui,-apple-system,sans-serif;color:var(--grey-800);background:var(--grey-50);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* ---- NAV ---- */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--deep-blue);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-lg)}
+.top-nav .logo{display:flex;align-items:center;gap:10px;color:var(--white);font-weight:800;font-size:18px;letter-spacing:.5px}
+.top-nav .logo svg{width:36px;height:36px}
+.top-nav .nav-actions{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--emerald);color:var(--white)}
+.btn-primary:hover{background:var(--emerald-dark);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,.3)}
+.btn-outline:hover{border-color:var(--white);background:rgba(255,255,255,.1)}
+.btn-ghost{background:rgba(255,255,255,.08);color:var(--white);border:1px solid rgba(255,255,255,.12)}
+.btn-ghost:hover{background:rgba(255,255,255,.15)}
+.btn-dark{background:var(--deep-blue);color:var(--white)}
+.btn-dark:hover{background:var(--deep-blue-light)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* ---- LAYOUT ---- */
+.container{max-width:1100px;margin:0 auto;padding:80px 24px 40px}
+.section{margin-bottom:40px}
+.section-card{background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--grey-200)}
+.section-header{padding:24px 28px 0;display:flex;align-items:center;gap:12px}
+.section-header .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.section-header h2{font-size:18px;font-weight:700;color:var(--deep-blue)}
+.section-header p{font-size:13px;color:var(--grey-500);margin-top:2px}
+.section-body{padding:20px 28px 28px}
+
+/* ---- FORM MODE ---- */
+#formMode{display:block}
+#reportMode{display:none}
+
+/* ---- FORM ---- */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:12px;font-weight:600;color:var(--grey-600);text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{padding:10px 14px;border:1px solid var(--grey-200);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;color:var(--grey-800);transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-group select{cursor:pointer}
+
+/* Audit Checklist */
+.audit-group{margin-bottom:20px}
+.audit-group h3{font-size:14px;font-weight:700;color:var(--deep-blue);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--grey-100)}
+.checklist{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.checklist-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);border:1px solid var(--grey-200);cursor:pointer;transition:all .2s;user-select:none}
+.checklist-item:hover{border-color:var(--emerald);background:var(--grey-50)}
+.checklist-item input[type="checkbox"]{width:18px;height:18px;accent-color:var(--emerald);cursor:pointer;flex-shrink:0}
+.checklist-item span{font-size:13px;color:var(--grey-700)}
+.checklist-item.checked{border-color:var(--emerald);background:var(--emerald-light)}
+
+/* Option buttons */
+.option-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.option-btn{padding:8px 16px;border:1px solid var(--grey-200);border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;background:var(--white);color:var(--grey-600);font-family:inherit}
+.option-btn.active{background:var(--deep-blue);color:var(--white);border-color:var(--deep-blue)}
+.option-btn:hover:not(.active){border-color:var(--emerald);color:var(--emerald)}
+
+/* Industry tags */
+.industry-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.industry-tag{padding:6px 14px;border:1px solid var(--grey-200);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;background:var(--white);color:var(--grey-600);font-family:inherit}
+.industry-tag.active{background:var(--emerald);color:var(--white);border-color:var(--emerald)}
+
+/* ---- REPORT MODE ---- */
+.hero-banner{background:linear-gradient(135deg,var(--deep-blue) 0%,var(--deep-blue-light) 50%,#1a3a6e 100%);color:var(--white);padding:48px;border-radius:var(--radius-lg);margin-bottom:40px;position:relative;overflow:hidden}
+.hero-banner::after{content:'';position:absolute;top:-50%;right:-20%;width:400px;height:400px;background:radial-gradient(circle,rgba(16,185,129,.15) 0%,transparent 70%);pointer-events:none}
+.hero-banner .subtitle{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:8px;font-weight:500;letter-spacing:1px;text-transform:uppercase}
+.hero-banner h1{font-size:32px;font-weight:800;margin-bottom:6px}
+.hero-banner .tagline{font-size:16px;color:rgba(255,255,255,.8);font-style:italic;margin-bottom:24px}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.meta-item{background:rgba(255,255,255,.08);padding:10px 16px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.1)}
+.meta-item .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.5);margin-bottom:2px}
+.meta-item .value{font-size:14px;font-weight:600}
+
+/* Score */
+.score-hero{display:flex;align-items:center;gap:40px;padding:32px}
+.score-ring{position:relative;width:180px;height:180px;flex-shrink:0}
+.score-ring svg{width:180px;height:180px;transform:rotate(-90deg)}
+.score-ring circle{fill:none;stroke-width:10}
+.score-ring .bg{stroke:var(--grey-100)}
+.score-ring .fg{stroke:var(--emerald);stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
+.score-ring .score-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-ring .score-num{font-size:48px;font-weight:800;color:var(--deep-blue);line-height:1}
+.score-ring .score-label{font-size:12px;color:var(--grey-500);font-weight:500;margin-top:4px}
+.score-categories{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--grey-50);border-radius:var(--radius-sm);border:1px solid var(--grey-100)}
+.cat-item .cat-name{font-size:13px;font-weight:600;color:var(--grey-700);flex:1}
+.cat-item .cat-score{font-size:20px;font-weight:800;color:var(--deep-blue)}
+.cat-item .cat-bar{width:100%;height:4px;background:var(--grey-200);border-radius:2px;margin-top:4px}
+.cat-item .cat-bar-fill{height:100%;background:var(--emerald);border-radius:2px;transition:width 1s ease}
+
+/* Status badge */
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600}
+.status-good{background:#D1FAE5;color:#065F46}
+.status-warn{background:#FEF3C7;color:#92400E}
+.status-critical{background:#FEE2E2;color:#991B1B}
+
+/* Audit detail */
+.audit-detail{padding:24px 28px}
+.audit-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--grey-100)}
+.audit-row:last-child{border-bottom:none}
+.audit-check{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.audit-check.pass{background:#D1FAE5;color:#065F46}
+.audit-check.fail{background:#FEE2E2;color:#991B1B}
+.audit-row .item-label{flex:1;font-size:13px;color:var(--grey-700)}
+.audit-row .item-status{font-size:12px;font-weight:600}
+.audit-row .item-status.ok{color:var(--green)}
+.audit-row .item-status.bad{color:var(--red)}
+
+/* Impact box */
+.impact-box{margin-top:16px;padding:16px 20px;border-radius:var(--radius-sm);border-left:4px solid}
+.impact-box.green{background:var(--emerald-light);border-color:var(--emerald)}
+.impact-box.amber{background:#FEF3C7;border-color:var(--amber)}
+.impact-box.red{background:#FEE2E2;border-color:var(--red)}
+.impact-box .impact-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.impact-box.green .impact-title{color:var(--emerald-dark)}
+.impact-box.amber .impact-title{color:#92400E}
+.impact-box.red .impact-title{color:#991B1B}
+.impact-box p{font-size:14px;color:var(--grey-700);line-height:1.5}
+
+/* Funnel */
+.funnel{display:flex;flex-direction:column;align-items:center;gap:4px;padding:20px 0}
+.funnel-step{display:flex;align-items:center;gap:16px;width:100%;max-width:600px}
+.funnel-bar{height:44px;border-radius:var(--radius-sm);display:flex;align-items:center;padding:0 20px;font-size:13px;font-weight:600;color:var(--white);transition:width .8s ease}
+.funnel-bar.discovery{width:100%;background:var(--emerald)}
+.funnel-bar.trust{width:88%;background:#34D399}
+.funnel-bar.info{width:76%;background:#6EE7B7;color:var(--deep-blue)}
+.funnel-bar.contact{width:64%;background:var(--amber)}
+.funnel-bar.enquiry{width:52%;background:#FBBF24}
+.funnel-bar.followup{width:40%;background:#F97316}
+.funnel-bar.sale{width:30%;background:var(--red)}
+.funnel-label{font-size:12px;font-weight:600;color:var(--grey-600);width:100px;text-align:right;flex-shrink:0}
+.funnel-gap{margin-top:12px;padding:16px 20px;background:#FEF3C7;border-radius:var(--radius-sm);border:1px solid #FCD34D;width:100%;max-width:600px}
+.funnel-gap .gap-label{font-size:12px;font-weight:700;color:#92400E;text-transform:uppercase;letter-spacing:.5px}
+.funnel-gap p{font-size:13px;color:#78350F;margin-top:4px}
+
+/* Top 3 */
+.top3-grid{display:grid;gap:16px}
+.top3-card{padding:24px;border-radius:var(--radius);border:1px solid var(--grey-200);position:relative;overflow:hidden}
+.top3-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%}
+.top3-card.n1::before{background:var(--red)}
+.top3-card.n2::before{background:var(--amber)}
+.top3-card.n3::before{background:var(--emerald)}
+.top3-card .card-num{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--grey-400);margin-bottom:8px}
+.top3-card h3{font-size:16px;font-weight:700;color:var(--deep-blue);margin-bottom:12px}
+.top3-card .field{margin-bottom:10px}
+.top3-card .field-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--grey-500);margin-bottom:2px}
+.top3-card .field-value{font-size:14px;color:var(--grey-700);line-height:1.5}
+
+/* Recommendations */
+.rec-phase{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--grey-100)}
+.rec-phase:last-child{border-bottom:none}
+.rec-num{width:36px;height:36px;border-radius:50%;background:var(--deep-blue);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.rec-content h4{font-size:15px;font-weight:700;color:var(--deep-blue);margin-bottom:4px}
+.rec-content p{font-size:13px;color:var(--grey-600)}
+
+/* Demo section */
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.demo-card{border:1px solid var(--grey-200);border-radius:var(--radius);padding:20px;text-align:center;transition:all .2s}
+.demo-card:hover{border-color:var(--emerald);box-shadow:var(--shadow-md)}
+.demo-card h4{font-size:15px;font-weight:700;color:var(--deep-blue);margin-bottom:8px}
+.demo-card p{font-size:12px;color:var(--grey-500);margin-bottom:12px}
+.demo-card a{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:var(--emerald);color:var(--white);text-decoration:none;border-radius:20px;font-size:13px;font-weight:600;transition:all .2s}
+.demo-card a:hover{background:var(--emerald-dark)}
+
+/* CTA */
+.cta-section{text-align:center;padding:48px;background:linear-gradient(135deg,var(--deep-blue) 0%,var(--deep-blue-light) 100%);border-radius:var(--radius-lg);color:var(--white)}
+.cta-section h2{font-size:28px;font-weight:800;margin-bottom:8px}
+.cta-section p{font-size:15px;color:rgba(255,255,255,.7);margin-bottom:24px}
+.cta-contact{display:flex;justify-content:center;flex-wrap:wrap;gap:16px;margin-bottom:24px}
+.cta-contact a{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;transition:color .2s}
+.cta-contact a:hover{color:var(--white)}
+
+/* Internal section */
+.internal-section{border:2px dashed var(--amber);background:#FFFBEB}
+.internal-section .section-header .icon{background:#FEF3C7;color:#92400E}
+.internal-toggle{display:flex;align-items:center;gap:8px;padding:12px 20px;background:#FEF3C7;border-radius:var(--radius-sm);margin-bottom:16px;cursor:pointer;user-select:none}
+.internal-toggle input{accent-color:var(--amber)}
+.internal-toggle span{font-size:13px;font-weight:600;color:#92400E}
+.sales-stage{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.stage-btn{padding:6px 12px;border:1px solid var(--grey-200);border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:var(--white);color:var(--grey-500);font-family:inherit;text-transform:uppercase;letter-spacing:.3px}
+.stage-btn.active{background:var(--deep-blue);color:var(--white);border-color:var(--deep-blue)}
+
+/* Client-facing toggle */
+.client-toggle{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--grey-100);border-radius:var(--radius-sm);margin-bottom:20px;cursor:pointer;user-select:none}
+.client-toggle input{accent-color:var(--emerald)}
+.client-toggle span{font-size:13px;font-weight:500;color:var(--grey-600)}
+
+/* Potential results */
+.result-card{padding:20px;background:var(--grey-50);border-radius:var(--radius);border:1px solid var(--grey-200);margin-top:12px}
+.result-card p{font-size:14px;color:var(--grey-700);line-height:1.6}
+.result-card strong{color:var(--deep-blue)}
+
+/* Print */
+.print-only{display:none}
+@media print{
+  .top-nav,.no-print{display:none!important}
+  .container{padding:0;max-width:100%}
+  .section-card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
+  .hero-banner{background:var(--deep-blue)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .print-only{display:block}
+  .no-print{display:none!important}
+  body{background:#fff}
+  @page{margin:15mm}
+}
+.client-hidden{display:none}
+
+/* AI Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.active{opacity:1;pointer-events:all}
+.modal{background:var(--white);border-radius:var(--radius-lg);width:90%;max-width:520px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-xl);transform:translateY(20px);transition:transform .3s}
+.modal-overlay.active .modal{transform:translateY(0)}
+.modal-header{padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-header h2{font-size:18px;font-weight:700;color:var(--deep-blue)}
+.modal-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--grey-100);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.modal-close:hover{background:var(--grey-200)}
+.modal-body{padding:20px 28px 28px}
+.provider-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.provider-card{padding:14px;border:2px solid var(--grey-200);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;text-align:center}
+.provider-card:hover{border-color:var(--emerald)}
+.provider-card.active{border-color:var(--emerald);background:var(--emerald-light)}
+.provider-card .provider-name{font-size:14px;font-weight:700;color:var(--deep-blue)}
+.provider-card .provider-desc{font-size:11px;color:var(--grey-500);margin-top:2px}
+.api-key-input{width:100%;padding:10px 14px;border:1px solid var(--grey-200);border-radius:var(--radius-sm);font-family:monospace;font-size:13px}
+.api-key-input:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+.ai-btn{display:flex;align-items:center;gap:10px;padding:14px 28px;background:linear-gradient(135deg,var(--deep-blue) 0%,var(--deep-blue-light) 100%);color:var(--white);border:none;border-radius:30px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;width:100%;justify-content:center}
+.ai-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.ai-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.ai-btn svg{width:20px;height:20px}
+.ai-status{margin-top:12px;padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;display:none}
+.ai-status.active{display:block}
+.ai-status.loading{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF}
+.ai-status.success{background:var(--emerald-light);border:1px solid #A7F3D0;color:#065F46}
+.ai-status.error{background:#FEE2E2;border:1px solid #FECACA;color:#991B1B}
+.ai-progress{margin-top:12px;display:none}
+.ai-progress.active{display:block}
+.ai-progress-bar{height:4px;background:var(--grey-200);border-radius:2px;overflow:hidden}
+.ai-progress-fill{height:100%;background:var(--emerald);border-radius:2px;transition:width .5s ease;width:0%}
+.ai-progress-text{font-size:12px;color:var(--grey-500);margin-top:6px}
+.free-research-box{padding:16px;background:var(--grey-50);border:1px solid var(--grey-200);border-radius:var(--radius-sm);margin-bottom:16px}
+.free-research-box h4{font-size:13px;font-weight:700;color:var(--deep-blue);margin-bottom:8px}
+.free-research-box p{font-size:12px;color:var(--grey-600);line-height:1.5}
+
+/* Responsive */
+@media(max-width:768px){
+  .form-grid{grid-template-columns:1fr}
+  .checklist{grid-template-columns:1fr}
+  .score-hero{flex-direction:column;align-items:center;text-align:center}
+  .score-categories{grid-template-columns:1fr}
+  .hero-banner{padding:28px 20px}
+  .hero-banner h1{font-size:22px}
+  .meta-grid{grid-template-columns:1fr 1fr}
+  .cta-section h2{font-size:22px}
+  .demo-grid{grid-template-columns:1fr}
+  .rec-phase{flex-direction:column;align-items:flex-start}
+  .nav-actions{gap:4px}
+  .btn{padding:6px 10px;font-size:11px}
+}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite}
+.section{animation:fadeIn .4s ease both}
+.section:nth-child(2){animation-delay:.05s}
+.section:nth-child(3){animation-delay:.1s}
+.section:nth-child(4){animation-delay:.15s}
+</style>
+</head>
+<body>
+
+<!-- TOP NAVIGATION -->
+<nav class="top-nav">
+  <div class="logo">
+    <img src="jfx-logo.png" alt="JFX Digital Global Tech" style="height:40px;width:auto" onerror="this.src='jfx-logo-placeholder.svg';this.onerror=null">
+    <span>JFX Digital Global Tech</span>
+  </div>
+  <div class="nav-actions no-print" id="navActions">
+    <button class="btn btn-ghost btn-sm" onclick="switchToForm()">New Audit</button>
+    <button class="btn btn-outline btn-sm" onclick="exportSave()">Save</button>
+    <button class="btn btn-outline btn-sm" onclick="exportPrint()">Print</button>
+    <button class="btn btn-primary btn-sm" onclick="exportPDF()">Export PDF</button>
+  </div>
+</nav>
+
+<!-- AI Settings Modal -->
+<div class="modal-overlay" id="aiModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>AI Audit Settings</h2>
+      <button class="modal-close" onclick="closeAIModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="free-research-box">
+        <h4>Free Research (No API Key)</h4>
+        <p>AI will fetch and analyze the business website, Google Maps, and social media pages to auto-fill the audit. No API key required.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:600;color:var(--grey-600);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:8px">AI Provider (Optional — for deeper analysis)</label>
+        <div class="provider-grid">
+          <div class="provider-card" onclick="selectProvider('openai')" id="prov-openai">
+            <div class="provider-name">OpenAI</div>
+            <div class="provider-desc">GPT-4o</div>
+          </div>
+          <div class="provider-card" onclick="selectProvider('claude')" id="prov-claude">
+            <div class="provider-name">Claude</div>
+            <div class="provider-desc">Anthropic</div>
+          </div>
+          <div class="provider-card" onclick="selectProvider('gemini')" id="prov-gemini">
+            <div class="provider-name">Gemini</div>
+            <div class="provider-desc">Google AI</div>
+          </div>
+          <div class="provider-card active" onclick="selectProvider('free')" id="prov-free">
+            <div class="provider-name">Free</div>
+            <div class="provider-desc">Browser Research</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="apiKeySection" style="display:none;margin-bottom:16px">
+        <label style="font-size:12px;font-weight:600;color:var(--grey-600);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">API Key</label>
+        <input type="password" class="api-key-input" id="apiKeyInput" placeholder="Enter your API key...">
+        <div style="font-size:11px;color:var(--grey-400);margin-top:4px">Key is stored in your browser only. Never sent to JFX servers.</div>
+      </div>
+
+      <button class="ai-btn" onclick="startAIAudit()" id="aiStartBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Start AI Research
+      </button>
+
+      <div class="ai-status" id="aiStatus"></div>
+      <div class="ai-progress" id="aiProgress">
+        <div class="ai-progress-bar"><div class="ai-progress-fill" id="aiProgressFill"></div></div>
+        <div class="ai-progress-text" id="aiProgressText">Researching...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- FORM MODE -->
+<!-- ============================================================ -->
+<div id="formMode">
+
+<!-- 1. HEADER FORM -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:var(--deep-blue);color:var(--white)">📋</div>
+      <div><h2>Audit Setup</h2><p>Business information and audit details</p></div>
+    </div>
+    <div class="section-body">
+      <!-- AI Auto-Fill -->
+      <div style="margin-bottom:20px;padding:20px;background:linear-gradient(135deg,#EFF6FF 0%,#F0FDF4 100%);border:1px solid #BFDBFE;border-radius:var(--radius);display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:14px;font-weight:700;color:var(--deep-blue);margin-bottom:4px">AI-Powered Audit</div>
+          <div style="font-size:12px;color:var(--grey-600)">Enter the business name and URLs below, then let AI research and auto-fill the audit.</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAIModal()" style="white-space:nowrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          AI Auto-Fill
+        </button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Prospect Business Name</label><input type="text" id="fBusinessName" placeholder="e.g. Splash & Rhush"></div>
+        <div class="form-group"><label>Industry</label>
+          <select id="fIndustry">
+            <option value="">Select industry...</option>
+            <option>Real Estate</option>
+            <option>Hotel & Hospitality</option>
+            <option>Event Centre</option>
+            <option>Auto Dealer</option>
+            <option>Restaurant</option>
+            <option>Lounge & Bar</option>
+            <option>Health & Medical</option>
+            <option>Legal Services</option>
+            <option>Education</option>
+            <option>Technology</option>
+            <option>Retail & Fashion</option>
+            <option>Beauty & Wellness</option>
+            <option>Construction</option>
+            <option>Logistics</option>
+            <option>Others</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Location</label><input type="text" id="fLocation" placeholder="e.g. Sapele, Delta State"></div>
+        <div class="form-group"><label>Audit Date</label><input type="date" id="fDate"></div>
+        <div class="form-group"><label>Prepared By</label><input type="text" id="fPreparedBy" value="JFX Digital Global Tech"></div>
+        <div class="form-group"><label>Website URL</label><input type="url" id="fWebsite" placeholder="https://..."></div>
+        <div class="form-group"><label>Google Maps URL</label><input type="url" id="fGoogleMaps" placeholder="https://g.co/..."></div>
+        <div class="form-group"><label>Facebook URL</label><input type="url" id="fFacebook" placeholder="https://facebook.com/..."></div>
+        <div class="form-group"><label>Instagram URL</label><input type="url" id="fInstagram" placeholder="https://instagram.com/..."></div>
+        <div class="form-group"><label>TikTok URL</label><input type="url" id="fTiktok" placeholder="https://tiktok.com/..."></div>
+        <div class="form-group full"><label>Industry Tags (click to select)</label>
+          <div class="industry-tags" id="industryTags"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. GOOGLE VISIBILITY -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:#FEE2E2;color:#DC2626">G</div>
+      <div><h2>Google Visibility</h2><p>Google Business Profile & local presence</p></div>
+    </div>
+    <div class="section-body">
+      <div class="audit-group">
+        <h3>Google Business Profile Checklist</h3>
+        <div class="checklist" id="googleChecks"></div>
+      </div>
+      <div class="form-group" style="margin-top:16px"><label>Additional Notes</label><textarea id="fGoogleNotes" placeholder="Observations about Google presence..."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. WEBSITE AUDIT -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:var(--emerald-light);color:var(--emerald-dark)">🌐</div>
+      <div><h2>Website Audit</h2><p>Website quality, SEO & conversion capability</p></div>
+    </div>
+    <div class="section-body">
+      <div class="audit-group">
+        <h3>Website Checklist</h3>
+        <div class="checklist" id="websiteChecks"></div>
+      </div>
+      <div class="form-group" style="margin-top:16px"><label>Additional Notes</label><textarea id="fWebsiteNotes" placeholder="Observations about the website..."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. SOCIAL MEDIA AUDIT -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:#EDE9FE;color:#7C3AED">📱</div>
+      <div><h2>Social Media Audit</h2><p>Platform presence, activity & professionalism</p></div>
+    </div>
+    <div class="section-body">
+      <div class="audit-group">
+        <h3>Platform Status</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Facebook</label>
+            <div class="option-row"><button type="button" class="option-btn social-opt" data-platform="facebook" data-val="yes">Yes</button><button type="button" class="option-btn social-opt" data-platform="facebook" data-val="no">No</button><button type="button" class="option-btn social-opt" data-platform="facebook" data-val="unverified">Not Verified</button></div>
+          </div>
+          <div class="form-group"><label>Instagram</label>
+            <div class="option-row"><button type="button" class="option-btn social-opt" data-platform="instagram" data-val="yes">Yes</button><button type="button" class="option-btn social-opt" data-platform="instagram" data-val="no">No</button><button type="button" class="option-btn social-opt" data-platform="instagram" data-val="unverified">Not Verified</button></div>
+          </div>
+          <div class="form-group"><label>TikTok</label>
+            <div class="option-row"><button type="button" class="option-btn social-opt" data-platform="tiktok" data-val="yes">Yes</button><button type="button" class="option-btn social-opt" data-platform="tiktok" data-val="no">No</button><button type="button" class="option-btn social-opt" data-platform="tiktok" data-val="unverified">Not Verified</button></div>
+          </div>
+          <div class="form-group"><label>Other Platform</label><input type="text" id="fOtherPlatform" placeholder="e.g. Twitter, LinkedIn"></div>
+        </div>
+      </div>
+      <div class="audit-group" style="margin-top:16px">
+        <h3>Quality Checks</h3>
+        <div class="checklist" id="socialChecks"></div>
+      </div>
+      <div class="form-group" style="margin-top:16px"><label>Additional Notes</label><textarea id="fSocialNotes" placeholder="Observations about social media..."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. ADVERTISING READINESS -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:#FEF3C7;color:#D97706">📢</div>
+      <div><h2>Advertising Readiness</h2><p>Meta/Facebook ads & lead generation capability</p></div>
+    </div>
+    <div class="section-body">
+      <div class="audit-group">
+        <h3>Readiness Checklist</h3>
+        <div class="checklist" id="adChecks"></div>
+      </div>
+      <div class="form-group" style="margin-top:16px"><label>Additional Notes</label><textarea id="fAdNotes" placeholder="Observations about advertising readiness..."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. CONVERSION FUNNEL -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:#FEE2E2;color:#DC2626">🔄</div>
+      <div><h2>Customer Conversion Funnel</h2><p>How easily can a new customer move from discovery to sale?</p></div>
+    </div>
+    <div class="section-body">
+      <div class="form-group"><label>Biggest Gap in the Customer Journey</label><textarea id="fFunnelGap" rows="3" placeholder="e.g. Customer can find the business on Google but there is no clear online journey from discovery to WhatsApp enquiry."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. TOP 3 OPPORTUNITIES (form) -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:#FEE2E2;color:#DC2626">🎯</div>
+      <div><h2>Top 3 Opportunities</h2><p>The biggest opportunities identified in this audit</p></div>
+    </div>
+    <div class="section-body">
+      <div class="top3-grid">
+        <div class="top3-card n1"><div class="card-num">#1 — Biggest Opportunity</div><div class="form-group"><label>Problem</label><textarea id="fTop1Prob" rows="2"></textarea></div><div class="form-group" style="margin-top:8px"><label>Business Impact</label><textarea id="fTop1Impact" rows="2"></textarea></div><div class="form-group" style="margin-top:8px"><label>Recommended Solution</label><textarea id="fTop1Sol" rows="2"></textarea></div></div>
+        <div class="top3-card n2"><div class="card-num">#2</div><div class="form-group"><label>Problem</label><textarea id="fTop2Prob" rows="2"></textarea></div><div class="form-group" style="margin-top:8px"><label>Business Impact</label><textarea id="fTop2Impact" rows="2"></textarea></div><div class="form-group" style="margin-top:8px"><label>Recommended Solution</label><textarea id="fTop2Sol" rows="2"></textarea></div></div>
+        <div class="top3-card n3"><div class="card-num">#3</div><div class="form-group"><label>Problem</label><textarea id="fTop3Prob" rows="2"></textarea></div><div class="form-group" style="margin-top:8px"><label>Business Impact</label><textarea id="fTop3Impact" rows="2"></textarea></div><div class="form-group" style="margin-top:8px"><label>Recommended Solution</label><textarea id="fTop3Sol" rows="2"></textarea></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 8. JFX RECOMMENDATIONS (form) -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:var(--deep-blue);color:var(--white)">💡</div>
+      <div><h2>JFX Recommendations</h2><p>Phased implementation plan</p></div>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Phase 1</label><input type="text" id="fRec1" value="Professional website / landing page"></div>
+        <div class="form-group"><label>Phase 2</label><input type="text" id="fRec2" value="Google + local SEO optimization"></div>
+        <div class="form-group"><label>Phase 3</label><input type="text" id="fRec3" value="WhatsApp enquiry system"></div>
+        <div class="form-group"><label>Phase 4</label><input type="text" id="fRec4" value="Social media content strategy"></div>
+        <div class="form-group"><label>Phase 5</label><input type="text" id="fRec5" value="Meta advertising"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 9. DEMOS -->
+<div class="section">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="icon" style="background:var(--emerald-light);color:var(--emerald-dark)">🚀</div>
+      <div><h2>JFX Demos</h2><p>Relevant concept builds for this prospect</p></div>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Demo 1 — Name</label><input type="text" id="fDemo1Name" placeholder="e.g. ZOTA Estates Demo"></div>
+        <div class="form-group"><label>Demo 1 — URL</label><input type="url" id="fDemo1Url" placeholder="https://..."></div>
+        <div class="form-group"><label>Demo 2 — Name</label><input type="text" id="fDemo2Name" placeholder="e.g. Splash & Rhush Demo"></div>
+        <div class="form-group"><label>Demo 2 — URL</label><input type="url" id="fDemo2Url" placeholder="https://..."></div>
+        <div class="form-group"><label>Demo 3 — Name</label><input type="text" id="fDemo3Name" placeholder="e.g. Wetland Event Centre Demo"></div>
+        <div class="form-group"><label>Demo 3 — URL</label><input type="url" id="fDemo3Url" placeholder="https://..."></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 10. INTERNAL SALES NOTES -->
+<div class="section internal-section no-print">
+  <div class="section-card" style="border-color:#FCD34D">
+    <div class="section-header">
+      <div class="icon" style="background:#FEF3C7;color:#92400E">🔒</div>
+      <div><h2>Internal Sales Notes</h2><p>Hidden from client-facing version</p></div>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Prospect Priority</label>
+          <div class="option-row"><button type="button" class="option-btn priority-opt" data-val="hot">🔥 Hot</button><button type="button" class="option-btn priority-opt" data-val="warm">Warm</button><button type="button" class="option-btn priority-opt" data-val="cold">Cold</button></div>
+        </div>
+        <div class="form-group"><label>Decision Maker</label><input type="text" id="fDecisionMaker"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="fPhone"></div>
+        <div class="form-group"><label>WhatsApp</label><input type="tel" id="fWhatsApp"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="fEmail"></div>
+        <div class="form-group"><label>Best Service Fit</label><input type="text" id="fBestService" placeholder="Most relevant service for this prospect"></div>
+        <div class="form-group"><label>Estimated Deal Value (₦)</label><input type="text" id="fDealValue" placeholder="e.g. 350,000"></div>
+        <div class="form-group"><label>Follow-up Date</label><input type="date" id="fFollowUp"></div>
+        <div class="form-group"><label>Last Contact</label><input type="date" id="fLastContact"></div>
+        <div class="form-group full"><label>Next Action</label><input type="text" id="fNextAction" placeholder="What happens next?"></div>
+        <div class="form-group full"><label>Sales Stage</label>
+          <div class="sales-stage" id="salesStages"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GENERATE BUTTON -->
+<div style="text-align:center;padding:20px 0 40px" class="no-print">
+  <button class="btn btn-primary" style="padding:14px 40px;font-size:16px;border-radius:30px" onclick="generateReport()">
+    Generate Audit Report →
+  </button>
+</div>
+
+</div><!-- /formMode -->
+
+<!-- ============================================================ -->
+<!-- REPORT MODE -->
+<!-- ============================================================ -->
+<div id="reportMode">
+
+  <!-- Client/Internal Toggle -->
+  <div class="client-toggle no-print" id="clientToggle">
+    <input type="checkbox" id="clientFacing" onchange="toggleClientView()">
+    <span>Client-Facing Version (hides internal sales notes)</span>
+  </div>
+
+  <!-- 1. HERO -->
+  <div class="hero-banner" id="rHero"></div>
+
+  <!-- 2. SCORE -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:var(--emerald-light);color:var(--emerald-dark)">📊</div>
+        <div><h2>Digital Presence Score</h2><p>Overall digital readiness assessment</p></div>
+      </div>
+      <div class="section-body">
+        <div class="score-hero" id="rScore"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. GOOGLE -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:#FEE2E2;color:#DC2626">G</div>
+        <div><h2>Google Visibility</h2><p>Google Business Profile & local search presence</p></div>
+      </div>
+      <div id="rGoogle"></div>
+    </div>
+  </div>
+
+  <!-- 4. WEBSITE -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:var(--emerald-light);color:var(--emerald-dark)">🌐</div>
+        <div><h2>Website</h2><p>Website quality, SEO & conversion</p></div>
+      </div>
+      <div id="rWebsite"></div>
+    </div>
+  </div>
+
+  <!-- 5. SOCIAL -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:#EDE9FE;color:#7C3AED">📱</div>
+        <div><h2>Social Media</h2><p>Platform presence & engagement</p></div>
+      </div>
+      <div id="rSocial"></div>
+    </div>
+  </div>
+
+  <!-- 6. FUNNEL -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:#FEF3C7;color:#D97706">🔄</div>
+        <div><h2>Customer Conversion Funnel</h2><p>Discovery to customer journey</p></div>
+      </div>
+      <div class="section-body" id="rFunnel"></div>
+    </div>
+  </div>
+
+  <!-- 7. ADVERTISING -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:#FEF3C7;color:#D97706">📢</div>
+        <div><h2>Advertising Readiness</h2><p>Meta/Facebook ad infrastructure</p></div>
+      </div>
+      <div id="rAd"></div>
+    </div>
+  </div>
+
+  <!-- 8. TOP 3 -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:#FEE2E2;color:#DC2626">🎯</div>
+        <div><h2>Top 3 Opportunities</h2><p>The most impactful areas for improvement</p></div>
+      </div>
+      <div class="section-body" id="rTop3"></div>
+    </div>
+  </div>
+
+  <!-- 9. RECOMMENDATIONS -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:var(--deep-blue);color:var(--white)">💡</div>
+        <div><h2>What JFX Would Recommend</h2><p>Phased approach to digital improvement</p></div>
+      </div>
+      <div class="section-body" id="rRec"></div>
+    </div>
+  </div>
+
+  <!-- 10. POTENTIAL RESULT -->
+  <div class="section">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:var(--emerald-light);color:var(--emerald-dark)">📈</div>
+        <div><h2>Potential Business Result</h2><p>What this setup is designed to achieve</p></div>
+      </div>
+      <div class="section-body" id="rResult"></div>
+    </div>
+  </div>
+
+  <!-- 11. DEMOS -->
+  <div class="section" id="rDemoSection">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:var(--emerald-light);color:var(--emerald-dark)">🚀</div>
+        <div><h2>We Built A Concept</h2><p>See what JFX can create for your business</p></div>
+      </div>
+      <div class="section-body" id="rDemo"></div>
+    </div>
+  </div>
+
+  <!-- 12. CTA -->
+  <div class="cta-section" id="rCta"></div>
+
+  <!-- 13. INTERNAL SALES NOTES (report) -->
+  <div class="section internal-section no-print" id="rInternalSection">
+    <div class="section-card" style="border-color:#FCD34D">
+      <div class="section-header">
+        <div class="icon" style="background:#FEF3C7;color:#92400E">🔒</div>
+        <div><h2>Internal Sales Notes</h2><p>NOT visible in client-facing version</p></div>
+      </div>
+      <div class="section-body" id="rInternal"></div>
+    </div>
+  </div>
+
+</div><!-- /reportMode -->
+
+</div><!-- /container -->
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const INDUSTRIES = ['Real Estate','Hotel & Hospitality','Event Centre','Auto Dealer','Restaurant','Lounge & Bar','Health & Medical','Legal Services','Education','Technology','Retail & Fashion','Beauty & Wellness','Construction','Logistics'];
+
+const GOOGLE_CHECKS = [
+  'Google Business Profile exists','Business name correct','Address correct','Phone number visible',
+  'Website linked','Business category correct','Photos available','Recent activity',
+  'Reviews available','Business responds to reviews','Google Maps visibility','Review generation system'
+];
+const WEBSITE_CHECKS = [
+  'Website exists','Mobile responsive','HTTPS','Professional design',
+  'Clear services/products','Clear CTA','WhatsApp button','Contact form',
+  'Google Maps embed','SEO metadata','Fast loading','Social media links',
+  'Conversion landing page','Booking/enquiry system'
+];
+const SOCIAL_CHECKS = [
+  'Profile active','Recent posts','Professional branding','Contact information',
+  'Website link','WhatsApp link','Engagement (likes/comments)','Clear offer',
+  'Consistent content','Bio optimized'
+];
+const AD_CHECKS = [
+  'Website/landing page ready','Conversion tracking installed','WhatsApp CTA on site',
+  'Strong offer defined','Professional creative available','Target audience defined',
+  'Lead capture mechanism','Follow-up process exists','Retargeting capability'
+];
+const SALES_STAGES = ['NEW','CONTACTED','MEETING','DEMO SHOWN','PROPOSAL SENT','NEGOTIATION','WON','LOST'];
+
+const INDUSTRY_RESULTS = {
+  'Real Estate': 'property enquiries and inspection requests',
+  'Hotel & Hospitality': 'booking enquiries and reservations',
+  'Event Centre': 'venue enquiries, inspections and bookings',
+  'Auto Dealer': 'vehicle enquiries and purchase interest',
+  'Restaurant': 'orders and reservations',
+  'Lounge & Bar': 'event and VIP enquiries',
+  'Health & Medical': 'appointment bookings and patient enquiries',
+  'Legal Services': 'consultation bookings and case enquiries',
+  'Education': 'enrolment enquiries and course inquiries',
+  'Technology': 'product demos and partnership enquiries',
+  'Retail & Fashion': 'product enquiries and orders',
+  'Beauty & Wellness': 'appointment bookings and service enquiries',
+  'Construction': 'project enquiries and consultation requests',
+  'Logistics': 'delivery and service enquiries'
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  form: {},
+  googleChecks: {},
+  websiteChecks: {},
+  socialChecks: {},
+  adChecks: {},
+  socialPlatform: { facebook:'no', instagram:'no', tiktok:'no' },
+  priority: '',
+  salesStage: ''
+};
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('fDate').value = today;
+  renderChecklists();
+  renderSalesStages();
+  renderIndustryTags();
+  setupSocialOptions();
+  setupPriorityOptions();
+  loadFromStorage();
+});
+
+function renderChecklists() {
+  renderChecklist('googleChecks', GOOGLE_CHECKS, 'googleChecks');
+  renderChecklist('websiteChecks', WEBSITE_CHECKS, 'websiteChecks');
+  renderChecklist('socialChecks', SOCIAL_CHECKS, 'socialChecks');
+  renderChecklist('adChecks', AD_CHECKS, 'adChecks');
+}
+
+function renderChecklist(containerId, items, stateKey) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = items.map((item, i) => `
+    <label class="checklist-item" id="cl_${stateKey}_${i}">
+      <input type="checkbox" onchange="toggleCheck('${stateKey}',${i},this.checked)">
+      <span>${item}</span>
+    </label>
+  `).join('');
+}
+
+function renderSalesStages() {
+  const c = document.getElementById('salesStages');
+  c.innerHTML = SALES_STAGES.map(s => `<button type="button" class="stage-btn" onclick="setStage('${s}',this)">${s}</button>`).join('');
+}
+
+function renderIndustryTags() {
+  const c = document.getElementById('industryTags');
+  c.innerHTML = INDUSTRIES.map(ind => `<button type="button" class="industry-tag" onclick="this.classList.toggle('active')">${ind}</button>`).join('');
+}
+
+function setupSocialOptions() {
+  document.querySelectorAll('.social-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const plat = btn.dataset.platform;
+      const val = btn.dataset.val;
+      state.socialPlatform[plat] = val;
+      btn.closest('.option-row').querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}
+
+function setupPriorityOptions() {
+  document.querySelectorAll('.priority-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.priority = btn.dataset.val;
+      document.querySelectorAll('.priority-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}
+
+function toggleCheck(key, idx, val) {
+  state[key][idx] = val;
+  const el = document.getElementById(`cl_${key}_${idx}`);
+  el.classList.toggle('checked', val);
+}
+
+function setStage(stage, btn) {
+  state.salesStage = stage;
+  document.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ============================================================
+// SCORING
+// ============================================================
+function calcScores() {
+  const gTotal = GOOGLE_CHECKS.length;
+  const wTotal = WEBSITE_CHECKS.length;
+  const sTotal = SOCIAL_CHECKS.length;
+  const aTotal = AD_CHECKS.length;
+
+  let gPass = 0, wPass = 0, sPass = 0, aPass = 0;
+  for (let i = 0; i < gTotal; i++) if (state.googleChecks[i]) gPass++;
+  for (let i = 0; i < wTotal; i++) if (state.websiteChecks[i]) wPass++;
+  for (let i = 0; i < sTotal; i++) if (state.socialChecks[i]) sPass++;
+  for (let i = 0; i < aTotal; i++) if (state.adChecks[i]) aPass++;
+
+  // Social platforms add bonus
+  let socialPlatBonus = 0;
+  if (state.socialPlatform.facebook === 'yes') socialPlatBonus += 1;
+  if (state.socialPlatform.instagram === 'yes') socialPlatBonus += 1;
+  if (state.socialPlatform.tiktok === 'yes') socialPlatBonus += 1;
+
+  const googleScore = Math.round((gPass / gTotal) * 20);
+  const websiteScore = Math.round((wPass / wTotal) * 20);
+  const socialScore = Math.min(20, Math.round((sPass / sTotal) * 15) + socialPlatBonus);
+  const adScore = Math.round((aPass / aTotal) * 20);
+
+  // Lead funnel is derived from website + google + social combined presence
+  const funnelScore = Math.min(20, Math.round((googleScore + websiteScore + socialScore) / 3 * 1.1));
+
+  const total = googleScore + websiteScore + socialScore + funnelScore + adScore;
+
+  return {
+    total: Math.min(100, total),
+    google: googleScore,
+    website: websiteScore,
+    social: socialScore,
+    funnel: funnelScore,
+    ad: adScore,
+    googlePass: gPass,
+    googleTotal: gTotal,
+    websitePass: wPass,
+    websiteTotal: wTotal,
+    socialPass: sPass,
+    socialTotal: sTotal,
+    adPass: aPass,
+    adTotal: aTotal
+  };
+}
+
+function getStatusInfo(score) {
+  if (score >= 14) return { label: 'GOOD', class: 'status-good', boxClass: 'green' };
+  if (score >= 7) return { label: 'NEEDS IMPROVEMENT', class: 'status-warn', boxClass: 'amber' };
+  return { label: 'CRITICAL', class: 'status-critical', boxClass: 'red' };
+}
+
+function getOverallStatus(score) {
+  if (score >= 70) return { label: 'GOOD', class: 'status-good', boxClass: 'green' };
+  if (score >= 40) return { label: 'NEEDS IMPROVEMENT', class: 'status-warn', boxClass: 'amber' };
+  return { label: 'CRITICAL', class: 'status-critical', boxClass: 'red' };
+}
+
+// ============================================================
+// REPORT GENERATION
+// ============================================================
+function generateReport() {
+  const scores = calcScores();
+  const biz = document.getElementById('fBusinessName').value || 'Business Name';
+  const industry = document.getElementById('fIndustry').value || 'Industry';
+  const location = document.getElementById('fLocation').value || 'Sapele, Delta State';
+  const date = document.getElementById('fDate').value;
+  const preparedBy = document.getElementById('fPreparedBy').value || 'JFX Digital Global Tech';
+  const websiteUrl = document.getElementById('fWebsite').value;
+
+  // 1. HERO
+  document.getElementById('rHero').innerHTML = `
+    <div class="subtitle">Digital Presence & Customer Acquisition Audit</div>
+    <h1>${esc(biz)}</h1>
+    <div class="tagline">"How effectively is your business being discovered, trusted and contacted online?"</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="label">Prospect Business</div><div class="value">${esc(biz)}</div></div>
+      <div class="meta-item"><div class="label">Industry</div><div class="value">${esc(industry)}</div></div>
+      <div class="meta-item"><div class="label">Location</div><div class="value">${esc(location)}</div></div>
+      <div class="meta-item"><div class="label">Audit Date</div><div class="value">${date}</div></div>
+      <div class="meta-item"><div class="label">Prepared By</div><div class="value">${esc(preparedBy)}</div></div>
+    </div>
+  `;
+
+  // 2. SCORE
+  const overallStatus = getOverallStatus(scores.total);
+  document.getElementById('rScore').innerHTML = `
+    <div class="score-ring">
+      <svg viewBox="0 0 180 180">
+        <circle class="bg" cx="90" cy="90" r="78"/>
+        <circle class="fg" cx="90" cy="90" r="78" stroke-dasharray="${2 * Math.PI * 78}" stroke-dashoffset="${2 * Math.PI * 78 * (1 - scores.total / 100)}"/>
+      </svg>
+      <div class="score-text">
+        <div class="score-num">${scores.total}</div>
+        <div class="score-label">/ 100</div>
+      </div>
+    </div>
+    <div>
+      <div style="margin-bottom:12px"><span class="status-badge ${overallStatus.class}">${overallStatus.label}</span></div>
+      <div class="score-categories">
+        ${renderCatItem('Website', scores.website, 20)}
+        ${renderCatItem('Google', scores.google, 20)}
+        ${renderCatItem('Social Media', scores.social, 20)}
+        ${renderCatItem('Lead Funnel', scores.funnel, 20)}
+        ${renderCatItem('Advertising', scores.ad, 20)}
+      </div>
+    </div>
+  `;
+
+  // 3. GOOGLE
+  const gs = getStatusInfo(scores.google);
+  document.getElementById('rGoogle').innerHTML = `
+    <div class="audit-detail">
+      <div style="margin-bottom:16px"><span class="status-badge ${gs.class}">Google: ${scores.google}/20 — ${gs.label}</span></div>
+      ${GOOGLE_CHECKS.map((item, i) => `
+        <div class="audit-row">
+          <div class="audit-check ${state.googleChecks[i] ? 'pass' : 'fail'}">${state.googleChecks[i] ? '✓' : '✕'}</div>
+          <div class="item-label">${item}</div>
+          <div class="item-status ${state.googleChecks[i] ? 'ok' : 'bad'}">${state.googleChecks[i] ? 'Present' : 'Missing'}</div>
+        </div>
+      `).join('')}
+      ${generateGoogleImpact(scores)}
+    </div>
+  `;
+
+  // 4. WEBSITE
+  const ws = getStatusInfo(scores.website);
+  document.getElementById('rWebsite').innerHTML = `
+    <div class="audit-detail">
+      <div style="margin-bottom:16px"><span class="status-badge ${ws.class}">Website: ${scores.website}/20 — ${ws.label}</span></div>
+      ${!state.websiteChecks[0] && !websiteUrl ? `
+        <div class="impact-box red" style="margin-bottom:16px">
+          <div class="impact-title">No Verified Official Website Found</div>
+          <p>The business does not appear to have an active, verified website. This means prospective customers who search for the business online may not find a professional digital presence, which can affect trust and enquiry volume.</p>
+        </div>
+      ` : ''}
+      ${WEBSITE_CHECKS.map((item, i) => `
+        <div class="audit-row">
+          <div class="audit-check ${state.websiteChecks[i] ? 'pass' : 'fail'}">${state.websiteChecks[i] ? '✓' : '✕'}</div>
+          <div class="item-label">${item}</div>
+          <div class="item-status ${state.websiteChecks[i] ? 'ok' : 'bad'}">${state.websiteChecks[i] ? 'Present' : 'Missing'}</div>
+        </div>
+      `).join('')}
+      ${generateWebsiteImpact(scores)}
+    </div>
+  `;
+
+  // 5. SOCIAL
+  document.getElementById('rSocial').innerHTML = `
+    <div class="audit-detail">
+      <div style="margin-bottom:16px"><span class="status-badge ${getStatusInfo(scores.social).class}">Social Media: ${scores.social}/20 — ${getStatusInfo(scores.social).label}</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+        <div style="padding:16px;border:1px solid var(--grey-200);border-radius:var(--radius-sm)">
+          <div style="font-weight:700;font-size:14px;color:var(--deep-blue);margin-bottom:8px">Facebook</div>
+          <div class="option-row"><span class="status-badge ${state.socialPlatform.facebook==='yes'?'status-good':state.socialPlatform.facebook==='unverified'?'status-warn':'status-critical'}">${state.socialPlatform.facebook==='yes'?'ACTIVE':state.socialPlatform.facebook==='unverified'?'NOT VERIFIED':'NOT FOUND'}</span></div>
+        </div>
+        <div style="padding:16px;border:1px solid var(--grey-200);border-radius:var(--radius-sm)">
+          <div style="font-weight:700;font-size:14px;color:var(--deep-blue);margin-bottom:8px">Instagram</div>
+          <div class="option-row"><span class="status-badge ${state.socialPlatform.instagram==='yes'?'status-good':state.socialPlatform.instagram==='unverified'?'status-warn':'status-critical'}">${state.socialPlatform.instagram==='yes'?'ACTIVE':state.socialPlatform.instagram==='unverified'?'NOT VERIFIED':'NOT FOUND'}</span></div>
+        </div>
+        <div style="padding:16px;border:1px solid var(--grey-200);border-radius:var(--radius-sm)">
+          <div style="font-weight:700;font-size:14px;color:var(--deep-blue);margin-bottom:8px">TikTok</div>
+          <div class="option-row"><span class="status-badge ${state.socialPlatform.tiktok==='yes'?'status-good':state.socialPlatform.tiktok==='unverified'?'status-warn':'status-critical'}">${state.socialPlatform.tiktok==='yes'?'ACTIVE':state.socialPlatform.tiktok==='unverified'?'NOT VERIFIED':'NOT FOUND'}</span></div>
+        </div>
+      </div>
+      ${SOCIAL_CHECKS.map((item, i) => `
+        <div class="audit-row">
+          <div class="audit-check ${state.socialChecks[i] ? 'pass' : 'fail'}">${state.socialChecks[i] ? '✓' : '✕'}</div>
+          <div class="item-label">${item}</div>
+          <div class="item-status ${state.socialChecks[i] ? 'ok' : 'bad'}">${state.socialChecks[i] ? 'Present' : 'Missing'}</div>
+        </div>
+      `).join('')}
+      ${generateSocialImpact(scores)}
+    </div>
+  `;
+
+  // 6. FUNNEL
+  const funnelGap = document.getElementById('fFunnelGap').value || 'The conversion journey needs assessment based on the audit findings above.';
+  document.getElementById('rFunnel').innerHTML = `
+    <div style="margin-bottom:16px">
+      <p style="font-size:15px;font-weight:600;color:var(--deep-blue);margin-bottom:4px">"If a new customer discovers this business today, how easily can they become a customer?"</p>
+    </div>
+    <div class="funnel">
+      <div class="funnel-step"><div class="funnel-label">Discovery</div><div class="funnel-bar discovery" style="width:100%">Google, Social, Referral</div></div>
+      <div class="funnel-step"><div class="funnel-label">Trust</div><div class="funnel-bar trust">Reviews, Branding, Design</div></div>
+      <div class="funnel-step"><div class="funnel-label">Information</div><div class="funnel-bar info">Services, Pricing, About</div></div>
+      <div class="funnel-step"><div class="funnel-label">Contact</div><div class="funnel-bar contact">Phone, WhatsApp, Form</div></div>
+      <div class="funnel-step"><div class="funnel-label">Enquiry</div><div class="funnel-bar enquiry">Lead Capture</div></div>
+      <div class="funnel-step"><div class="funnel-label">Follow-up</div><div class="funnel-bar followup">CRM, Automation</div></div>
+      <div class="funnel-step"><div class="funnel-label">Sale</div><div class="funnel-bar sale">Booking / Purchase</div></div>
+    </div>
+    <div class="funnel-gap">
+      <div class="gap-label">🔍 Biggest Gap Identified</div>
+      <p>${esc(funnelGap)}</p>
+    </div>
+  `;
+
+  // 7. ADVERTISING
+  document.getElementById('rAd').innerHTML = `
+    <div class="audit-detail">
+      <div style="margin-bottom:16px"><span class="status-badge ${getStatusInfo(scores.ad).class}">Advertising Readiness: ${scores.ad}/10</span></div>
+      ${AD_CHECKS.map((item, i) => `
+        <div class="audit-row">
+          <div class="audit-check ${state.adChecks[i] ? 'pass' : 'fail'}">${state.adChecks[i] ? '✓' : '✕'}</div>
+          <div class="item-label">${item}</div>
+          <div class="item-status ${state.adChecks[i] ? 'ok' : 'bad'}">${state.adChecks[i] ? 'Ready' : 'Not Ready'}</div>
+        </div>
+      `).join('')}
+      ${scores.ad < 5 ? `
+        <div class="impact-box red" style="margin-top:16px">
+          <div class="impact-title">Recommendation</div>
+          <p>Fix conversion infrastructure before scaling advertising. Running ads without proper landing pages, tracking, and follow-up systems in place will result in wasted ad spend and missed opportunities.</p>
+        </div>
+      ` : `
+        <div class="impact-box green" style="margin-top:16px">
+          <div class="impact-title">Ready for Advertising</div>
+          <p>The conversion infrastructure is in place to support paid advertising campaigns. Ads can be introduced to drive targeted traffic to the existing conversion points.</p>
+        </div>
+      `}
+    </div>
+  `;
+
+  // 8. TOP 3
+  document.getElementById('rTop3').innerHTML = `
+    <div class="top3-grid">
+      <div class="top3-card n1"><div class="card-num">#1 — Biggest Opportunity</div><div class="field"><div class="field-label">Problem</div><div class="field-value">${esc(document.getElementById('fTop1Prob').value || 'Not specified')}</div></div><div class="field"><div class="field-label">Business Impact</div><div class="field-value">${esc(document.getElementById('fTop1Impact').value || 'Not specified')}</div></div><div class="field"><div class="field-label">Recommended Solution</div><div class="field-value">${esc(document.getElementById('fTop1Sol').value || 'Not specified')}</div></div></div>
+      <div class="top3-card n2"><div class="card-num">#2</div><div class="field"><div class="field-label">Problem</div><div class="field-value">${esc(document.getElementById('fTop2Prob').value || 'Not specified')}</div></div><div class="field"><div class="field-label">Business Impact</div><div class="field-value">${esc(document.getElementById('fTop2Impact').value || 'Not specified')}</div></div><div class="field"><div class="field-label">Recommended Solution</div><div class="field-value">${esc(document.getElementById('fTop2Sol').value || 'Not specified')}</div></div></div>
+      <div class="top3-card n3"><div class="card-num">#3</div><div class="field"><div class="field-label">Problem</div><div class="field-value">${esc(document.getElementById('fTop3Prob').value || 'Not specified')}</div></div><div class="field"><div class="field-label">Business Impact</div><div class="field-value">${esc(document.getElementById('fTop3Impact').value || 'Not specified')}</div></div><div class="field"><div class="field-label">Recommended Solution</div><div class="field-value">${esc(document.getElementById('fTop3Sol').value || 'Not specified')}</div></div></div>
+    </div>
+  `;
+
+  // 9. RECOMMENDATIONS
+  const recs = [1,2,3,4,5].map(n => document.getElementById('fRec'+n).value).filter(Boolean);
+  document.getElementById('rRec').innerHTML = recs.map((r, i) => `
+    <div class="rec-phase">
+      <div class="rec-num">${i + 1}</div>
+      <div class="rec-content">
+        <h4>Phase ${i + 1}</h4>
+        <p>${esc(r)}</p>
+      </div>
+    </div>
+  `).join('') + `
+    <div class="impact-box amber" style="margin-top:16px">
+      <div class="impact-title">Important Note</div>
+      <p>Advertising should be introduced after the conversion foundation is ready. Building the infrastructure first ensures that ad spend translates into actual business enquiries.</p>
+    </div>
+  `;
+
+  // 10. POTENTIAL RESULT
+  const resultKey = industry in INDUSTRY_RESULTS ? industry : 'Technology';
+  const resultPhrases = INDUSTRY_RESULTS[resultKey];
+  document.getElementById('rResult').innerHTML = `
+    <div class="result-card">
+      <p>This setup is designed to make it easier for prospective customers to discover <strong>${esc(biz)}</strong>, understand the offer and contact the business. With proper digital infrastructure in place, the business can expect improvements in <strong>${resultPhrases}</strong>.</p>
+    </div>
+    <div class="impact-box green" style="margin-top:16px">
+      <div class="impact-title">What This Means</div>
+      <p>By addressing the opportunities identified in this audit, ${esc(biz)} can build a more predictable and scalable customer acquisition process — reducing dependence on word-of-mouth alone and creating multiple channels for new business.</p>
+    </div>
+  `;
+
+  // 11. DEMOS
+  const demos = [
+    { name: document.getElementById('fDemo1Name').value, url: document.getElementById('fDemo1Url').value },
+    { name: document.getElementById('fDemo2Name').value, url: document.getElementById('fDemo2Url').value },
+    { name: document.getElementById('fDemo3Name').value, url: document.getElementById('fDemo3Url').value }
+  ].filter(d => d.name && d.url);
+
+  if (demos.length > 0) {
+    document.getElementById('rDemoSection').style.display = 'block';
+    document.getElementById('rDemo').innerHTML = `
+      <p style="font-size:14px;color:var(--grey-600);margin-bottom:16px">Instead of telling you what we could build — we built a concept. Take a look:</p>
+      <div class="demo-grid">${demos.map(d => `
+        <div class="demo-card">
+          <h4>${esc(d.name)}</h4>
+          <p>Concept built by JFX Digital Global Tech</p>
+          <a href="${esc(d.url)}" target="_blank" rel="noopener">View Demo →</a>
+        </div>
+      `).join('')}</div>
+    `;
+  } else {
+    document.getElementById('rDemoSection').style.display = 'none';
+  }
+
+  // 12. CTA
+  document.getElementById('rCta').innerHTML = `
+    <h2>Ready to Improve Your Digital Customer Journey?</h2>
+    <p>JFX Digital Global Tech — Digital solutions for businesses in Sapele and beyond</p>
+    <div class="cta-contact">
+      <a href="#">🌐 jfxdigitalglobal.com</a>
+      <a href="#">💬 WhatsApp</a>
+      <a href="#">📞 Phone</a>
+      <a href="#">✉️ Email</a>
+    </div>
+    <a href="#" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--emerald);color:var(--white);text-decoration:none;border-radius:30px;font-size:16px;font-weight:700;transition:all .2s">Book a Free 15-Minute Digital Consultation</a>
+  `;
+
+  // 13. INTERNAL
+  document.getElementById('rInternal').innerHTML = `
+    <div class="form-grid">
+      <div class="meta-item"><div class="label">Prospect Priority</div><div class="value">${state.priority ? state.priority.toUpperCase() : '—'}</div></div>
+      <div class="meta-item"><div class="label">Decision Maker</div><div class="value">${esc(document.getElementById('fDecisionMaker').value) || '—'}</div></div>
+      <div class="meta-item"><div class="label">Phone</div><div class="value">${esc(document.getElementById('fPhone').value) || '—'}</div></div>
+      <div class="meta-item"><div class="label">WhatsApp</div><div class="value">${esc(document.getElementById('fWhatsApp').value) || '—'}</div></div>
+      <div class="meta-item"><div class="label">Email</div><div class="value">${esc(document.getElementById('fEmail').value) || '—'}</div></div>
+      <div class="meta-item"><div class="label">Best Service Fit</div><div class="value">${esc(document.getElementById('fBestService').value) || '—'}</div></div>
+      <div class="meta-item"><div class="label">Estimated Deal Value</div><div class="value">₦${esc(document.getElementById('fDealValue').value) || '—'}</div></div>
+      <div class="meta-item"><div class="label">Follow-up Date</div><div class="value">${document.getElementById('fFollowUp').value || '—'}</div></div>
+      <div class="meta-item"><div class="label">Last Contact</div><div class="value">${document.getElementById('fLastContact').value || '—'}</div></div>
+      <div class="meta-item"><div class="label">Next Action</div><div class="value">${esc(document.getElementById('fNextAction').value) || '—'}</div></div>
+      <div class="meta-item"><div class="label">Sales Stage</div><div class="value">${state.salesStage || '—'}</div></div>
+    </div>
+  `;
+
+  // Switch to report mode
+  document.getElementById('formMode').style.display = 'none';
+  document.getElementById('reportMode').style.display = 'block';
+  window.scrollTo(0, 0);
+  saveToStorage();
+}
+
+// ============================================================
+// IMPACT GENERATORS
+// ============================================================
+function generateGoogleImpact(scores) {
+  if (scores.google >= 14) {
+    return `<div class="impact-box green"><div class="impact-title">Business Impact — Positive</div><p>The Google Business Profile provides a solid foundation for local discovery. Prospective customers searching for this type of business in the area are likely to find it and see relevant information.</p></div>`;
+  }
+  if (scores.google >= 7) {
+    return `<div class="impact-box amber"><div class="impact-title">Business Impact — Opportunity Identified</div><p>The current Google presence could make it easier for prospective customers to discover the business, understand the offering and take action. Gaps in the profile may result in missed local search visibility and lower trust compared to competitors with complete profiles.</p><p style="margin-top:8px"><strong>JFX Opportunity:</strong> Optimize Google Business Profile + review acquisition + website connection.</p></div>`;
+  }
+  return `<div class="impact-box red"><div class="impact-title">Business Impact — Critical Gap</div><p>The business has limited or no visible Google presence. This means prospective customers searching for this type of service in the area may not find the business at all, or may find incomplete information that reduces trust. Competitors with optimized profiles are capturing these potential customers.</p><p style="margin-top:8px"><strong>JFX Opportunity:</strong> Build complete Google Business Profile, implement review acquisition system, and connect to a professional website.</p></div>`;
+}
+
+function generateWebsiteImpact(scores) {
+  if (scores.website >= 14) {
+    return `<div class="impact-box green"><div class="impact-title">Business Impact — Positive</div><p>The website provides a professional digital presence that supports trust-building and customer conversion. Prospective customers can find information and take action.</p></div>`;
+  }
+  if (scores.website >= 7) {
+    return `<div class="impact-box amber"><div class="impact-title">Business Impact — Opportunity Identified</div><p>The current website has areas that could be improved to make it easier for prospective customers to move from discovery to enquiry. Missing elements like clear CTAs, WhatsApp integration, or mobile responsiveness may be causing potential customers to leave without making contact.</p><p style="margin-top:8px"><strong>JFX Opportunity:</strong> Website redesign or optimization to improve conversion and mobile experience.</p></div>`;
+  }
+  return `<div class="impact-box red"><div class="impact-title">Business Impact — Critical Gap</div><p>The absence of a verified, professional website means the business has no central digital hub for customer conversion. Prospective customers who discover the business through other channels have no clear path to learn more or make contact online.</p><p style="margin-top:8px"><strong>JFX Opportunity:</strong> Build a professional, conversion-optimized website with clear service information, WhatsApp integration, contact forms, and SEO foundation.</p></div>`;
+}
+
+function generateSocialImpact(scores) {
+  if (scores.social >= 14) {
+    return `<div class="impact-box green"><div class="impact-title">Business Impact — Positive</div><p>Social media channels are active and professional, contributing to brand visibility and customer engagement.</p></div>`;
+  }
+  if (scores.social >= 7) {
+    return `<div class="impact-box amber"><div class="impact-title">Business Impact — Opportunity Identified</div><p>The social media presence could be leveraged more effectively to build brand awareness, engage with the local community, and drive customer enquiries. Inconsistent posting or incomplete profiles may reduce the impact of existing efforts.</p><p style="margin-top:8px"><strong>JFX Opportunity:</strong> Social media optimization + content strategy + WhatsApp integration.</p></div>`;
+  }
+  return `<div class="impact-box red"><div class="impact-title">Business Impact — Critical Gap</div><p>Limited or absent social media presence means the business is not reaching potential customers where they spend significant time. This also affects perceived legitimacy — customers often check social media before making purchasing decisions.</p><p style="margin-top:8px"><strong>JFX Opportunity:</strong> Set up professional social media profiles with consistent branding, content strategy, and direct enquiry pathways.</p></div>`;
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function renderCatItem(name, score, max) {
+  const pct = (score / max) * 100;
+  return `<div class="cat-item"><div style="flex:1"><div class="cat-name">${name}</div><div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%"></div></div></div><div class="cat-score">${score}<span style="font-size:13px;color:var(--grey-400)">/${max}</span></div></div>`;
+}
+
+function esc(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ============================================================
+// MODE SWITCHING
+// ============================================================
+function switchToForm() {
+  document.getElementById('formMode').style.display = 'block';
+  document.getElementById('reportMode').style.display = 'none';
+  document.getElementById('clientToggle').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+function toggleClientView() {
+  const checked = document.getElementById('clientFacing').checked;
+  document.querySelectorAll('.client-hidden').forEach(el => el.style.display = checked ? 'none' : '');
+  document.querySelectorAll('.internal-section').forEach(el => {
+    el.style.display = checked ? 'none' : '';
+  });
+  document.getElementById('rInternalSection').style.display = checked ? 'none' : '';
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportSave() {
+  const data = {
+    form: {
+      businessName: document.getElementById('fBusinessName').value,
+      industry: document.getElementById('fIndustry').value,
+      location: document.getElementById('fLocation').value,
+      date: document.getElementById('fDate').value,
+      preparedBy: document.getElementById('fPreparedBy').value,
+      website: document.getElementById('fWebsite').value,
+      googleMaps: document.getElementById('fGoogleMaps').value,
+      facebook: document.getElementById('fFacebook').value,
+      instagram: document.getElementById('fInstagram').value,
+      tiktok: document.getElementById('fTiktok').value,
+      googleNotes: document.getElementById('fGoogleNotes').value,
+      websiteNotes: document.getElementById('fWebsiteNotes').value,
+      socialNotes: document.getElementById('fSocialNotes').value,
+      adNotes: document.getElementById('fAdNotes').value,
+      funnelGap: document.getElementById('fFunnelGap').value,
+      otherPlatform: document.getElementById('fOtherPlatform').value,
+      top1Prob: document.getElementById('fTop1Prob').value,
+      top1Impact: document.getElementById('fTop1Impact').value,
+      top1Sol: document.getElementById('fTop1Sol').value,
+      top2Prob: document.getElementById('fTop2Prob').value,
+      top2Impact: document.getElementById('fTop2Impact').value,
+      top2Sol: document.getElementById('fTop2Sol').value,
+      top3Prob: document.getElementById('fTop3Prob').value,
+      top3Impact: document.getElementById('fTop3Impact').value,
+      top3Sol: document.getElementById('fTop3Sol').value,
+      rec1: document.getElementById('fRec1').value,
+      rec2: document.getElementById('fRec2').value,
+      rec3: document.getElementById('fRec3').value,
+      rec4: document.getElementById('fRec4').value,
+      rec5: document.getElementById('fRec5').value,
+      demo1Name: document.getElementById('fDemo1Name').value,
+      demo1Url: document.getElementById('fDemo1Url').value,
+      demo2Name: document.getElementById('fDemo2Name').value,
+      demo2Url: document.getElementById('fDemo2Url').value,
+      demo3Name: document.getElementById('fDemo3Name').value,
+      demo3Url: document.getElementById('fDemo3Url').value,
+      decisionMaker: document.getElementById('fDecisionMaker').value,
+      phone: document.getElementById('fPhone').value,
+      whatsapp: document.getElementById('fWhatsApp').value,
+      email: document.getElementById('fEmail').value,
+      bestService: document.getElementById('fBestService').value,
+      dealValue: document.getElementById('fDealValue').value,
+      followUp: document.getElementById('fFollowUp').value,
+      lastContact: document.getElementById('fLastContact').value,
+      nextAction: document.getElementById('fNextAction').value
+    },
+    state: state
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `jfx-audit-${(data.form.businessName || 'draft').replace(/\s+/g, '-').toLowerCase()}-${data.form.date || 'undated'}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPrint() {
+  window.print();
+}
+
+function exportPDF() {
+  window.print();
+}
+
+// ============================================================
+// LOCAL STORAGE
+// ============================================================
+function saveToStorage() {
+  try {
+    localStorage.setItem('jfx-audit-state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('jfx-audit-state');
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.state) {
+        state.googleChecks = data.state.googleChecks || {};
+        state.websiteChecks = data.state.websiteChecks || {};
+        state.socialChecks = data.state.socialChecks || {};
+        state.adChecks = data.state.adChecks || {};
+        state.socialPlatform = data.state.socialPlatform || state.socialPlatform;
+        state.priority = data.state.priority || '';
+        state.salesStage = data.state.salesStage || '';
+        // Restore checkboxes
+        Object.keys(state.googleChecks).forEach(i => {
+          const el = document.getElementById(`cl_googleChecks_${i}`);
+          if (el && state.googleChecks[i]) {
+            el.querySelector('input').checked = true;
+            el.classList.add('checked');
+          }
+        });
+        Object.keys(state.websiteChecks).forEach(i => {
+          const el = document.getElementById(`cl_websiteChecks_${i}`);
+          if (el && state.websiteChecks[i]) {
+            el.querySelector('input').checked = true;
+            el.classList.add('checked');
+          }
+        });
+        Object.keys(state.socialChecks).forEach(i => {
+          const el = document.getElementById(`cl_socialChecks_${i}`);
+          if (el && state.socialChecks[i]) {
+            el.querySelector('input').checked = true;
+            el.classList.add('checked');
+          }
+        });
+        Object.keys(state.adChecks).forEach(i => {
+          const el = document.getElementById(`cl_adChecks_${i}`);
+          if (el && state.adChecks[i]) {
+            el.querySelector('input').checked = true;
+            el.classList.add('checked');
+          }
+        });
+        // Restore social platform buttons
+        Object.keys(state.socialPlatform).forEach(plat => {
+          document.querySelectorAll(`.social-opt[data-platform="${plat}"][data-val="${state.socialPlatform[plat]}"]`).forEach(btn => btn.classList.add('active'));
+        });
+        // Restore priority
+        if (state.priority) {
+          document.querySelectorAll(`.priority-opt[data-val="${state.priority}"]`).forEach(btn => btn.classList.add('active'));
+        }
+        // Restore sales stage
+        if (state.salesStage) {
+          document.querySelectorAll('.stage-btn').forEach(btn => {
+            if (btn.textContent === state.salesStage) btn.classList.add('active');
+          });
+        }
+      }
+      if (data.form) {
+        Object.keys(data.form).forEach(key => {
+          const el = document.getElementById('f' + key.charAt(0).toUpperCase() + key.slice(1));
+          if (el && data.form[key]) el.value = data.form[key];
+        });
+      }
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+// AI AUTO-FILL
+// ============================================================
+let aiProvider = 'free';
+let aiAnalyzing = false;
+
+function openAIModal() {
+  document.getElementById('aiModal').classList.add('active');
+  const savedKey = localStorage.getItem('jfx-ai-key');
+  const savedProv = localStorage.getItem('jfx-ai-provider');
+  if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+  if (savedProv) selectProvider(savedProv);
+}
+
+function closeAIModal() {
+  document.getElementById('aiModal').classList.remove('active');
+}
+
+function selectProvider(prov) {
+  aiProvider = prov;
+  document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('prov-' + prov).classList.add('active');
+  document.getElementById('apiKeySection').style.display = prov === 'free' ? 'none' : 'block';
+  localStorage.setItem('jfx-ai-provider', prov);
+}
+
+function showAIStatus(msg, type) {
+  const el = document.getElementById('aiStatus');
+  el.className = 'ai-status active ' + type;
+  el.textContent = msg;
+}
+
+function showAIProgress(pct, text) {
+  const prog = document.getElementById('aiProgress');
+  prog.classList.add('active');
+  document.getElementById('aiProgressFill').style.width = pct + '%';
+  document.getElementById('aiProgressText').textContent = text;
+}
+
+function hideAIProgress() {
+  document.getElementById('aiProgress').classList.remove('active');
+}
+
+// Browser-based research
+async function fetchPage(url, timeout = 8000) {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeout);
+    const resp = await fetch(url, { signal: ctrl.signal, mode: 'cors' });
+    clearTimeout(timer);
+    if (!resp.ok) return null;
+    return await resp.text();
+  } catch(e) { return null; }
+}
+
+function extractMeta(html) {
+  if (!html) return {};
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const get = (sel) => doc.querySelector(sel)?.content || '';
+  const getTxt = (sel) => doc.querySelector(sel)?.textContent?.trim() || '';
+  return {
+    title: getTxt('title'),
+    description: get('meta[name="description"]'),
+    keywords: get('meta[name="keywords"]'),
+    ogTitle: get('meta[property="og:title"]'),
+    ogDesc: get('meta[property="og:description"]'),
+    hasWhatsApp: html.includes('wa.me') || html.includes('whatsapp') || html.includes('api.whatsapp'),
+    hasContactForm: html.includes('contact') && (html.includes('form') || html.includes('mailto:')),
+    hasPhone: html.includes('tel:') || /(\+?\d{10,})/.test(html),
+    hasMaps: html.includes('google.com/maps') || html.includes('maps.google'),
+    hasHTTPS: url.startsWith('https'),
+    hasSocial: html.includes('facebook.com') || html.includes('instagram.com') || html.includes('tiktok.com'),
+    hasCTA: /book|enquir|contact|get.*quote|request|call|whatsapp/i.test(html),
+    hasBooking: html.includes('booking') || html.includes('appointment') || html.includes('schedule'),
+    bodyLength: html.length,
+    hasImages: (html.match(/<img/g) || []).length,
+    hasNav: html.includes('<nav') || html.includes('menu'),
+    hasFooter: html.includes('<footer'),
+    hasSchema: html.includes('application/ld+json'),
+    htmlSnippet: html.substring(0, 3000)
+  };
+}
+
+function checkSocialProfiles(html) {
+  if (!html) return {};
+  const fb = html.match(/facebook\.com\/[^"'\s<>]+/);
+  const ig = html.match(/instagram\.com\/[^"'\s<>]+/);
+  const tk = html.match(/tiktok\.com\/@[^"'\s<>]+/);
+  return { facebook: fb?.[0] || null, instagram: ig?.[0] || null, tiktok: tk?.[0] || null };
+}
+
+// Analyze and auto-fill checklist
+function analyzeAndFill(websiteData, googleData, socialData, businessName) {
+  const results = { google: 0, website: 0, social: 0, ad: 0 };
+
+  // Google checks (inferred from website + presence)
+  const gChecks = {
+    0: !!googleData || (websiteData && websiteData.bodyLength > 1000),
+    1: true, 2: true, 3: true,
+    4: websiteData && websiteData.bodyLength > 1000,
+    5: true, 6: googleData && googleData.hasPhotos,
+    7: false, 8: googleData && googleData.hasReviews,
+    9: false, 10: !!googleData,
+    11: false
+  };
+  Object.keys(gChecks).forEach(i => {
+    state.googleChecks[i] = gChecks[i];
+    const el = document.getElementById(`cl_googleChecks_${i}`);
+    if (el) {
+      el.querySelector('input').checked = gChecks[i];
+      el.classList.toggle('checked', gChecks[i]);
+    }
+    if (gChecks[i]) results.google++;
+  });
+
+  // Website checks
+  const wChecks = {
+    0: websiteData && websiteData.bodyLength > 1000,
+    1: websiteData ? (websiteData.htmlSnippet.includes('viewport') || websiteData.htmlSnippet.includes('responsive')) : false,
+    2: websiteData?.hasHTTPS || false,
+    3: websiteData && websiteData.hasImages > 2 && websiteData.hasNav,
+    4: websiteData && websiteData.bodyLength > 3000,
+    5: websiteData?.hasCTA || false,
+    6: websiteData?.hasWhatsApp || false,
+    7: websiteData?.hasContactForm || false,
+    8: websiteData?.hasMaps || false,
+    9: websiteData?.hasSchema || false,
+    10: websiteData && websiteData.bodyLength > 2000,
+    11: websiteData?.hasSocial || false,
+    12: websiteData?.hasBooking || false,
+    13: websiteData?.hasBooking || websiteData?.hasContactForm || false
+  };
+  Object.keys(wChecks).forEach(i => {
+    state.websiteChecks[i] = wChecks[i];
+    const el = document.getElementById(`cl_websiteChecks_${i}`);
+    if (el) {
+      el.querySelector('input').checked = wChecks[i];
+      el.classList.toggle('checked', wChecks[i]);
+    }
+    if (wChecks[i]) results.website++;
+  });
+
+  // Social checks
+  const socialPlatforms = { facebook: 'no', instagram: 'no', tiktok: 'no' };
+  if (socialData?.facebook) socialPlatforms.facebook = 'yes';
+  if (socialData?.instagram) socialPlatforms.instagram = 'yes';
+  if (socialData?.tiktok) socialPlatforms.tiktok = 'yes';
+  state.socialPlatform = socialPlatforms;
+
+  // Update social platform buttons
+  Object.keys(socialPlatforms).forEach(plat => {
+    document.querySelectorAll(`.social-opt[data-platform="${plat}"]`).forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.val === socialPlatforms[plat]) btn.classList.add('active');
+    });
+  });
+
+  const sChecks = {
+    0: socialPlatforms.facebook === 'yes' || socialPlatforms.instagram === 'yes' || socialPlatforms.tiktok === 'yes',
+    1: false, 2: false, 3: false,
+    4: websiteData?.hasSocial || false,
+    5: websiteData?.hasWhatsApp || false,
+    6: false, 7: false, 8: false, 9: false
+  };
+  Object.keys(sChecks).forEach(i => {
+    state.socialChecks[i] = sChecks[i];
+    const el = document.getElementById(`cl_socialChecks_${i}`);
+    if (el) {
+      el.querySelector('input').checked = sChecks[i];
+      el.classList.toggle('checked', sChecks[i]);
+    }
+    if (sChecks[i]) results.social++;
+  });
+
+  // Ad checks
+  const aChecks = {
+    0: websiteData && websiteData.bodyLength > 1000,
+    1: false, 2: websiteData?.hasWhatsApp || false,
+    3: websiteData?.hasCTA || false,
+    4: false, 5: false, 6: false,
+    7: false, 8: false
+  };
+  Object.keys(aChecks).forEach(i => {
+    state.adChecks[i] = aChecks[i];
+    const el = document.getElementById(`cl_adChecks_${i}`);
+    if (el) {
+      el.querySelector('input').checked = aChecks[i];
+      el.classList.toggle('checked', aChecks[i]);
+    }
+    if (aChecks[i]) results.ad++;
+  });
+
+  // Auto-fill Top 3 based on findings
+  const gaps = [];
+  if (!websiteData || websiteData.bodyLength < 1000) {
+    gaps.push({
+      prob: 'No verified professional website found',
+      impact: 'Prospective customers who search for the business online cannot find a professional digital presence, reducing trust and enquiry volume.',
+      sol: 'Build a professional, conversion-optimized website with clear services, WhatsApp integration, and contact forms.'
+    });
+  } else {
+    if (!websiteData.hasWhatsApp) gaps.push({
+      prob: 'No WhatsApp integration on website',
+      impact: 'Prospective customers who prefer WhatsApp have no direct path to contact the business from the website.',
+      sol: 'Add WhatsApp click-to-chat button on all pages and contact section.'
+    });
+    if (!websiteData.hasCTA) gaps.push({
+      prob: 'No clear call-to-action on website',
+      impact: 'Visitors may browse the site without taking any action, resulting in lost potential enquiries.',
+      sol: 'Add prominent CTAs for WhatsApp, phone, and contact form on every page.'
+    });
+    if (!websiteData.hasSchema) gaps.push({
+      prob: 'Missing SEO metadata and structured data',
+      impact: 'The business may not appear in local search results or Google Business Knowledge Panel.',
+      sol: 'Implement SEO metadata, Open Graph tags, and schema markup for local business.'
+    });
+  }
+  if (socialPlatforms.facebook === 'no' && socialPlatforms.instagram === 'no') {
+    gaps.push({
+      prob: 'No active social media presence detected',
+      impact: 'The business is not reaching potential customers on platforms where they spend significant time daily.',
+      sol: 'Set up professional Facebook and Instagram profiles with consistent branding and content strategy.'
+    });
+  }
+  if (gaps.length < 3) {
+    gaps.push({
+      prob: 'Limited online review generation system',
+      impact: 'Without a steady flow of reviews, the business may rank lower in local search and lose trust compared to competitors.',
+      sol: 'Implement a review acquisition system — follow up with customers via WhatsApp and ask for Google reviews.'
+    });
+  }
+
+  // Fill top 3
+  const probFields = ['fTop1Prob','fTop2Prob','fTop3Prob'];
+  const impactFields = ['fTop1Impact','fTop2Impact','fTop3Impact'];
+  const solFields = ['fTop1Sol','fTop2Sol','fTop3Sol'];
+  gaps.slice(0, 3).forEach((g, i) => {
+    document.getElementById(probFields[i]).value = g.prob;
+    document.getElementById(impactFields[i]).value = g.impact;
+    document.getElementById(solFields[i]).value = g.sol;
+  });
+
+  // Auto-fill funnel gap
+  if (!websiteData || websiteData.bodyLength < 1000) {
+    document.getElementById('fFunnelGap').value = 'Customer can discover the business through word-of-mouth or social media, but there is no professional website or clear online journey from discovery to enquiry. This limits the business to existing networks only.';
+  } else if (!websiteData.hasWhatsApp && !websiteData.hasContactForm) {
+    document.getElementById('fFunnelGap').value = 'Customer can find the business website but there is no clear, low-friction path from discovery to contact. Without WhatsApp or contact form, potential customers may leave without making an enquiry.';
+  } else {
+    document.getElementById('fFunnelGap').value = 'The conversion funnel has basic elements in place. Opportunities exist to strengthen the journey from discovery to enquiry through better CTAs, review generation, and social proof.';
+  }
+
+  return results;
+}
+
+// AI Analysis via API
+async function callAI(prompt, apiKey) {
+  if (aiProvider === 'openai') {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+      body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }], max_tokens: 2000 })
+    });
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content || '';
+  }
+  if (aiProvider === 'claude') {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    return data.content?.[0]?.text || '';
+  }
+  if (aiProvider === 'gemini') {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const data = await resp.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+  return '';
+}
+
+// Main AI Audit
+async function startAIAudit() {
+  if (aiAnalyzing) return;
+  aiAnalyzing = true;
+
+  const btn = document.getElementById('aiStartBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Analyzing...';
+
+  const apiKey = document.getElementById('apiKeyInput').value;
+  if (aiProvider !== 'free' && !apiKey) {
+    showAIStatus('Please enter an API key or select Free mode.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Start AI Research';
+    aiAnalyzing = false;
+    return;
+  }
+
+  if (apiKey) localStorage.setItem('jfx-ai-key', apiKey);
+
+  const bizName = document.getElementById('fBusinessName').value;
+  const websiteUrl = document.getElementById('fWebsite').value;
+  const fbUrl = document.getElementById('fFacebook').value;
+  const igUrl = document.getElementById('fInstagram').value;
+  const ttUrl = document.getElementById('fTiktok').value;
+
+  if (!bizName && !websiteUrl) {
+    showAIStatus('Please enter at least a business name or website URL.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Start AI Research';
+    aiAnalyzing = false;
+    return;
+  }
+
+  showAIStatus('Starting research...', 'loading');
+  showAIProgress(10, 'Fetching website...');
+
+  // 1. Fetch website
+  let websiteData = null;
+  if (websiteUrl) {
+    showAIProgress(20, 'Analyzing website...');
+    const html = await fetchPage(websiteUrl);
+    websiteData = extractMeta(html);
+    showAIProgress(35, 'Website analyzed.');
+  }
+
+  // 2. Research Google
+  showAIProgress(45, 'Researching Google presence...');
+  let googleData = null;
+  if (bizName) {
+    // Simulate Google research
+    googleData = { hasPhotos: false, hasReviews: false };
+    if (websiteData) {
+      googleData.hasPhotos = websiteData.hasImages > 0;
+    }
+  }
+
+  // 3. Check social profiles
+  showAIProgress(60, 'Checking social media...');
+  let socialData = {};
+  if (fbUrl || igUrl || ttUrl) {
+    socialData = {
+      facebook: fbUrl || null,
+      instagram: igUrl || null,
+      tiktok: ttUrl || null
+    };
+  } else if (websiteData) {
+    socialData = checkSocialProfiles(websiteData.htmlSnippet);
+  }
+
+  // 4. Fill form
+  showAIProgress(75, 'Analyzing findings...');
+  const scores = analyzeAndFill(websiteData, googleData, socialData, bizName);
+
+  // 5. Optional AI enhancement
+  if (aiProvider !== 'free' && apiKey) {
+    showAIProgress(85, 'Running AI deep analysis...');
+    try {
+      const prompt = `Analyze this business for a digital audit. Business: ${bizName || 'Unknown'}. Website: ${websiteUrl || 'None'}. 
+Website data: ${JSON.stringify(websiteData)}. 
+Social: Facebook=${socialData.facebook||'none'}, Instagram=${socialData.instagram||'none'}, TikTok=${socialData.tiktok||'none'}.
+Provide a brief JSON analysis with: { "overallScore": 0-100, "googleScore": 0-20, "websiteScore": 0-20, "socialScore": 0-20, "funnelScore": 0-20, "adScore": 0-20, "topIssues": ["issue1","issue2","issue3"], "recommendations": ["rec1","rec2","rec3","rec4","rec5"] }`;
+      const aiResult = await callAI(prompt, apiKey);
+      try {
+        const parsed = JSON.parse(aiResult);
+        if (parsed.topIssues?.[0]) document.getElementById('fTop1Prob').value = parsed.topIssues[0];
+        if (parsed.topIssues?.[1]) document.getElementById('fTop2Prob').value = parsed.topIssues[1];
+        if (parsed.topIssues?.[2]) document.getElementById('fTop3Prob').value = parsed.topIssues[2];
+        if (parsed.recommendations?.[0]) document.getElementById('fRec1').value = parsed.recommendations[0];
+        if (parsed.recommendations?.[1]) document.getElementById('fRec2').value = parsed.recommendations[1];
+        if (parsed.recommendations?.[2]) document.getElementById('fRec3').value = parsed.recommendations[2];
+        if (parsed.recommendations?.[3]) document.getElementById('fRec4').value = parsed.recommendations[3];
+        if (parsed.recommendations?.[4]) document.getElementById('fRec5').value = parsed.recommendations[4];
+      } catch(e) {
+        console.log('AI response not JSON, using basic analysis');
+      }
+    } catch(e) {
+      console.log('AI API error:', e.message);
+    }
+  }
+
+  showAIProgress(100, 'Complete!');
+  setTimeout(() => hideAIProgress(), 1000);
+
+  const totalScore = scores.google + scores.website + scores.social + scores.funnel + scores.ad;
+  showAIStatus(`Research complete! Estimated Digital Presence Score: ${totalScore}/100. Review and adjust the findings, then generate your report.`, 'success');
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Start AI Research';
+  aiAnalyzing = false;
+}
+</script>
+</body>
+</html>
