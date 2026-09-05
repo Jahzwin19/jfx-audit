@@ -1671,60 +1671,76 @@ function parseDDGResults(html) {
   return results.length > 0 ? results : null;
 }
 
-// Server-side search — tries DuckDuckGo first (most reliable for business data), then Bing, then Google
+// Server-side search — searches DDG, Bing, and Google in parallel, combines all results
 async function searchGoogle(query) {
   console.log('[SEARCH] Query:', query);
-  // 1. Try DuckDuckGo via server (best for real business data)
-  try {
-    const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=duckduckgo`);
-    if (resp.ok) {
-      const html = await resp.text();
-      const results = parseDDGResults(html);
-      if (results && results.length > 0) { console.log('[SEARCH] DDG:', results.length, 'results'); return results; }
-    }
-  } catch(e) { console.log('[SEARCH] DDG error:', e.message); }
+  const allResults = [];
 
-  // 2. Try Bing via server
-  try {
-    const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=bing`);
-    if (resp.ok) {
-      const html = await resp.text();
-      const results = parseBingResults(html);
-      if (results && results.length > 0) { console.log('[SEARCH] Bing:', results.length, 'results'); return results; }
-    }
-  } catch(e) { console.log('[SEARCH] Bing error:', e.message); }
+  // Search all engines in parallel for maximum data
+  const searches = [
+    // DuckDuckGo
+    (async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=duckduckgo`);
+        if (resp.ok) {
+          const html = await resp.text();
+          const results = parseDDGResults(html);
+          if (results && results.length > 0) {
+            console.log('[SEARCH] DDG:', results.length, 'results');
+            allResults.push(...results);
+          }
+        }
+      } catch(e) { console.log('[SEARCH] DDG error:', e.message); }
+    })(),
+    // Bing
+    (async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=bing`);
+        if (resp.ok) {
+          const html = await resp.text();
+          const results = parseBingResults(html);
+          if (results && results.length > 0) {
+            console.log('[SEARCH] Bing:', results.length, 'results');
+            allResults.push(...results);
+          }
+        }
+      } catch(e) { console.log('[SEARCH] Bing error:', e.message); }
+    })(),
+    // Google
+    (async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=google`);
+        if (resp.ok) {
+          const html = await resp.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const results = [];
+          doc.querySelectorAll('div.g, div[data-sokoban-container]').forEach(el => {
+            const title = el.querySelector('h3')?.textContent || '';
+            const link = el.querySelector('a')?.href || '';
+            const snippet = el.querySelector('[data-sncf], .VwiC3b, .st')?.textContent || '';
+            if (title && link) results.push({ title, link, snippet });
+          });
+          if (results.length > 0) {
+            console.log('[SEARCH] Google:', results.length, 'results');
+            allResults.push(...results);
+          }
+        }
+      } catch(e) { console.log('[SEARCH] Google error:', e.message); }
+    })()
+  ];
 
-  // 3. Try Google via server
-  try {
-    const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=google`);
-    if (resp.ok) {
-      const html = await resp.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const results = [];
-      doc.querySelectorAll('div.g, div[data-sokoban-container]').forEach(el => {
-        const title = el.querySelector('h3')?.textContent || '';
-        const link = el.querySelector('a')?.href || '';
-        const snippet = el.querySelector('[data-sncf], .VwiC3b, .st')?.textContent || '';
-        if (title && link) results.push({ title, link, snippet });
-      });
-      if (results.length > 0) return results;
-    }
-  } catch(e) {}
+  await Promise.allSettled(searches);
 
-  // 4. Fallback: try CORS proxies directly
-  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en`;
-  const html = await fetchPage(searchUrl);
-  if (!html) return null;
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const results = [];
-  doc.querySelectorAll('div.g, div[data-sokoban-container]').forEach(el => {
-    const title = el.querySelector('h3')?.textContent || '';
-    const link = el.querySelector('a')?.href || '';
-    const snippet = el.querySelector('[data-sncf], .VwiC3b, .st')?.textContent || '';
-    if (title && link) results.push({ title, link, snippet });
+  // Deduplicate by link
+  const seen = new Set();
+  const unique = allResults.filter(r => {
+    if (!r.link || seen.has(r.link)) return false;
+    seen.add(r.link);
+    return true;
   });
-  if (results.length > 0) console.log('[SEARCH] Google fallback:', results.length, 'results');
-  return results.length > 0 ? results : null;
+
+  console.log('[SEARCH] Total unique results:', unique.length);
+  return unique.length > 0 ? unique : null;
 }
 
 // Fetch Google Maps + business info from search
