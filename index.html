@@ -1748,7 +1748,7 @@ async function checkGoogleMaps(businessName, location) {
   const addressMatch = allSnippetsExt.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd|Quarter|Quater)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
     || allSnippetsExt.match(/(OBIRE|Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun|Ikeja|Lekki|Surulere|Yaba|Victoria Island|Ikoyi|Ajah|Ikorodu|Mushin|Oshodi|Isolo|Agege|Ibadan|Enugu|Aba|Owerri|Onitsha|Nnewi|Aba|Calabar|Uyo|Aba|Ogoni|Yenagoa|Bayelsa|Kaduna|Kano|Jos|Minna|Lokoja|Abeokuta|Ogun|Ondo|Akure|Ado Ekiti|Osogbo|Oshogbo)[^.\n]{5,120}/i)
     || allSnippetsExt.match(/(?:address|location|located at|situated at|find us at|visit us at|office at|headquarters at|based in|based at)[:\s]*([^\n.]{10,120})/i);
-  const phoneMatch = allText.match(/(?:\+\d{1,3}[\s\-\(\)]*)?(?:\(?\d{2,4}\)?[\s\-\.\)]*\d{3,4}[\s\-\.\)]*\d{3,4}[\s\-\.\)]*\d{0,4})/);
+  const phoneMatch = allSnippetsExt.match(/(?:\+\d{1,3}[\s\-\(\)]*)?(?:\(?\d{2,4}\)?[\s\-\.\)]*\d{3,4}[\s\-\.\)]*\d{3,4}[\s\-\.\)]*\d{0,4})/);
   const phoneClean = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
   const reviewMatch = allSnippetsExt.match(/(\d+(?:\.\d+)?)\s*(?:star|rating|review|\/\s*5)/i)
     || allSnippetsExt.match(/(\d+(?:\.\d+)?)\s*\/\s*5/);
