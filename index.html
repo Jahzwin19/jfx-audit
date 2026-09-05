@@ -1653,6 +1653,16 @@ function parseDDGResults(html) {
       }
     }
   }
+  // Attach snippets from result__snippet elements if available
+  if (results.length > 0) {
+    const snipRe = /class="result__snippet"[\s\S]*?>([\s\S]*?)<\/a>/gi;
+    const snippets = [];
+    let m;
+    while ((m = snipRe.exec(html)) !== null) {
+      snippets.push(m[1].replace(/<[^>]+>/g, '').trim());
+    }
+    results.forEach((r, i) => { if (!r.snippet && snippets[i]) r.snippet = snippets[i]; });
+  }
   return results.length > 0 ? results : null;
 }
 
