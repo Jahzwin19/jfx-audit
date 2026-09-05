@@ -421,6 +421,13 @@ body{font-family:'Plus Jakarta Sans','Manrope',system-ui,-apple-system,sans-seri
       <div id="apiKeySection" style="display:none;margin-bottom:16px">
         <label style="font-size:12px;font-weight:600;color:var(--grey-600);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">API Key</label>
         <input type="password" class="api-key-input" id="apiKeyInput" placeholder="Enter your API key...">
+        <div id="geminiModelSection" style="display:none;margin-top:8px">
+          <label style="font-size:12px;font-weight:600;color:var(--grey-600);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Gemini Model</label>
+          <select id="geminiModelSelect" style="width:100%;padding:10px;border:1px solid var(--grey-200);border-radius:8px;font-size:14px;background:white">
+            <option value="gemini-3.8-flash">Gemini 3.8 Flash (Latest)</option>
+            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+          </select>
+        </div>
         <div style="font-size:11px;color:var(--grey-400);margin-top:4px">Key is stored in your browser only. Never sent to JFX servers.</div>
       </div>
 
@@ -1541,6 +1548,7 @@ function selectProvider(prov) {
   document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('active'));
   document.getElementById('prov-' + prov).classList.add('active');
   document.getElementById('apiKeySection').style.display = prov === 'free' ? 'none' : 'block';
+  document.getElementById('geminiModelSection').style.display = prov === 'gemini' ? 'block' : 'none';
   localStorage.setItem('jfx-ai-provider', prov);
 }
 
@@ -2822,7 +2830,8 @@ async function callAI(prompt, apiKey) {
     return data.content?.[0]?.text || '';
   }
   if (aiProvider === 'gemini') {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
+    const model = document.getElementById('geminiModelSelect')?.value || 'gemini-3.8-flash';
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ systemInstruction: { parts: [{ text: 'You are a senior digital marketing auditor at JFX Digital Global Tech, Sapele, Delta State, Nigeria. You perform professional business digital audits. Always respond with valid JSON only. No markdown, no explanation, just the JSON object.' }] }, contents: [{ parts: [{ text: prompt }] }] })
