@@ -2805,7 +2805,7 @@ async function callAI(prompt, apiKey) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-      body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'system', content: 'You are a digital marketing audit expert for JFX Digital Global Tech. Analyze businesses and provide actionable insights. Always respond with valid JSON only.' }, { role: 'user', content: prompt }], max_tokens: 2000, temperature: 0.3 })
+      body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'system', content: 'You are a senior digital marketing auditor at JFX Digital Global Tech, Sapele, Delta State, Nigeria. You perform professional business digital audits. Always respond with valid JSON only. No markdown, no explanation, just the JSON object.' }, { role: 'user', content: prompt }], max_tokens: 3000, temperature: 0.3 })
     });
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message);
@@ -2815,17 +2815,17 @@ async function callAI(prompt, apiKey) {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, system: 'You are a digital marketing audit expert for JFX Digital Global Tech. Analyze businesses and provide actionable insights. Always respond with valid JSON only.', messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 3000, system: 'You are a senior digital marketing auditor at JFX Digital Global Tech, Sapele, Delta State, Nigeria. You perform professional business digital audits. Always respond with valid JSON only. No markdown, no explanation, just the JSON object.', messages: [{ role: 'user', content: prompt }] })
     });
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message);
     return data.content?.[0]?.text || '';
   }
   if (aiProvider === 'gemini') {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ systemInstruction: { parts: [{ text: 'You are a digital marketing audit expert for JFX Digital Global Tech. Analyze businesses and provide actionable insights. Always respond with valid JSON only.' }] }, contents: [{ parts: [{ text: prompt }] }] })
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: 'You are a senior digital marketing auditor at JFX Digital Global Tech, Sapele, Delta State, Nigeria. You perform professional business digital audits. Always respond with valid JSON only. No markdown, no explanation, just the JSON object.' }] }, contents: [{ parts: [{ text: prompt }] }] })
     });
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message);
@@ -2945,68 +2945,214 @@ async function startAIAudit() {
       showAIProgress(88, 'Running AI deep analysis...');
       showAIStatus('AI is performing deep analysis...', 'loading');
       try {
-        const researchContext = `BUSINESS: ${bizName || 'Unknown'}
+        const researchContext = `BUSINESS NAME: ${bizName || 'Unknown'}
 LOCATION: ${location || 'Not specified'}
-WEBSITE: ${websiteUrl || 'None'}
+WEBSITE URL: ${websiteUrl || 'None'}
 WEBSITE ANALYSIS: ${JSON.stringify(websiteData, null, 2)}
-GOOGLE MAPS: ${JSON.stringify(googleData, null, 2)}
-SOCIAL MEDIA: Facebook=${socialData.facebook||'none'}, Instagram=${socialData.instagram||'none'}, TikTok=${socialData.tiktok||'none'}`;
+GOOGLE MAPS DATA: ${JSON.stringify(googleData, null, 2)}
+SOCIAL MEDIA: Facebook=${socialData.facebook||'none'}, Instagram=${socialData.instagram||'none'}, TikTok=${socialData.tiktok||'none'}
+SEARCH RESULTS (combined from Google, Bing, DuckDuckGo): ${JSON.stringify(googleData?.allSnippets || '', null, 2)}`;
 
-        const prompt = `You are a digital marketing expert at JFX Digital Global Tech in Sapele, Delta State, Nigeria. Analyze this business and provide a comprehensive audit.
+        const prompt = `You are a senior digital marketing auditor at JFX Digital Global Tech in Sapele, Delta State, Nigeria. Perform a comprehensive professional business digital audit for this business.
 
 ${researchContext}
 
-Provide a JSON response with these exact fields:
+Analyze ALL data above and provide a complete audit. Be specific to THIS business — use real data found, not generic statements.
+
+Respond with ONLY this JSON (no markdown, no code blocks):
 {
+  "businessName": "actual business name found",
+  "industry": "detected industry",
+  "phone": "phone number found or null",
+  "email": "email found or null",
+  "address": "full address found or null",
+  "whatsapp": "whatsapp number found or null",
+  "facebook": "facebook url or null",
+  "instagram": "instagram url or null",
+  "tiktok": "tiktok url or null",
+  "googleMapsUrl": "google maps url or null",
+  "googleCategory": "business category on Google or null",
+  "googleRating": "rating number or null",
+  "googleReviewCount": "review count number or null",
   "scores": { "overall": 0-100, "google": 0-20, "website": 0-20, "social": 0-20, "funnel": 0-20, "ad": 0-20 },
-  "googleStatus": "GOOD" | "NEEDS IMPROVEMENT" | "CRITICAL",
-  "websiteStatus": "GOOD" | "NEEDS IMPROVEMENT" | "CRITICAL",
-  "socialStatus": "GOOD" | "NEEDS IMPROVEMENT" | "CRITICAL",
+  "googleChecks": {
+    "hasListing": true/false,
+    "nameCorrect": true/false,
+    "addressCorrect": true/false,
+    "phoneVisible": true/false,
+    "websiteLinked": true/false,
+    "categoryCorrect": true/false,
+    "photosAvailable": true/false,
+    "recentActivity": true/false,
+    "reviewsAvailable": true/false,
+    "respondsToReviews": true/false,
+    "mapsVisibility": true/false,
+    "reviewSystem": true/false
+  },
+  "websiteChecks": {
+    "exists": true/false,
+    "mobileResponsive": true/false,
+    "https": true/false,
+    "professionalDesign": true/false,
+    "servicesClear": true/false,
+    "clearCTA": true/false,
+    "whatsappButton": true/false,
+    "contactForm": true/false,
+    "googleMapsEmbed": true/false,
+    "seoMetadata": true/false,
+    "fastLoading": true/false,
+    "socialLinks": true/false,
+    "bookingSystem": true/false,
+    "conversionPath": true/false
+  },
+  "socialChecks": {
+    "profileActive": true/false,
+    "recentPosts": true/false,
+    "engagementPresent": true/false,
+    "contactInfoVisible": true/false,
+    "linkedToWebsite": true/false,
+    "whatsappIntegrated": true/false,
+    "contentQuality": true/false,
+    "ctaPresent": true/false,
+    "crossPlatformPresence": true/false,
+    "brandConsistent": true/false
+  },
+  "adChecks": {
+    "landingPageReady": true/false,
+    "conversionTracking": true/false,
+    "whatsappCTA": true/false,
+    "strongOffer": true/false,
+    "professionalCreative": true/false,
+    "audienceDefined": true/false,
+    "leadCapture": true/false,
+    "followUpProcess": true/false,
+    "retargeting": true/false
+  },
+  "googleNotes": "detailed notes about Google presence with specific findings",
+  "websiteNotes": "detailed notes about website with specific features found and missing",
+  "socialNotes": "detailed notes about social media presence with specific URLs and activity",
+  "adNotes": "detailed notes about advertising readiness",
+  "funnelGap": "specific description of the biggest gap in this business's customer acquisition funnel",
   "topIssues": [
-    { "problem": "...", "impact": "...", "solution": "..." },
-    { "problem": "...", "impact": "...", "solution": "..." },
-    { "problem": "...", "impact": "...", "solution": "..." }
+    { "problem": "specific problem for THIS business", "impact": "business impact", "solution": "specific solution" },
+    { "problem": "specific problem", "impact": "business impact", "solution": "specific solution" },
+    { "problem": "specific problem", "impact": "business impact", "solution": "specific solution" }
   ],
-  "funnelGap": "...",
-  "recommendations": ["Phase 1: ...", "Phase 2: ...", "Phase 3: ...", "Phase 4: ...", "Phase 5: ..."],
-  "potentialResult": "..."
+  "recommendations": [
+    "Phase 1: specific action for THIS business",
+    "Phase 2: specific action",
+    "Phase 3: specific action",
+    "Phase 4: specific action",
+    "Phase 5: specific action"
+  ],
+  "potentialResult": "specific expected outcome if all recommendations are implemented for THIS business"
 }`;
 
         const aiResult = await callAI(prompt, apiKey);
-        // Extract JSON from response (handle markdown code blocks)
         const jsonMatch = aiResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          // Apply AI scores
-          if (parsed.scores) {
-            // Override basic scores with AI scores
-            if (parsed.scores.google !== undefined) scores.google = parsed.scores.google;
-            if (parsed.scores.website !== undefined) scores.website = parsed.scores.website;
-            if (parsed.scores.social !== undefined) scores.social = parsed.scores.social;
-            if (parsed.scores.funnel !== undefined) scores.funnel = parsed.scores.funnel;
-            if (parsed.scores.ad !== undefined) scores.ad = parsed.scores.ad;
+          const p = JSON.parse(jsonMatch[0]);
+          console.log('[AI] Full audit response:', p);
+
+          // Apply scores
+          if (p.scores) {
+            if (p.scores.google !== undefined) scores.google = p.scores.google;
+            if (p.scores.website !== undefined) scores.website = p.scores.website;
+            if (p.scores.social !== undefined) scores.social = p.scores.social;
+            if (p.scores.funnel !== undefined) scores.funnel = p.scores.funnel;
+            if (p.scores.ad !== undefined) scores.ad = p.scores.ad;
           }
+
+          // Apply contact data
+          if (p.phone) setField('fPhone', p.phone);
+          if (p.email) setField('fEmail', p.email);
+          if (p.address) setField('fLocation', p.address);
+          if (p.whatsapp) setField('fWhatsApp', p.whatsapp);
+          if (p.facebook) setField('fFacebook', p.facebook);
+          if (p.instagram) setField('fInstagram', p.instagram);
+          if (p.tiktok) setField('fTiktok', p.tiktok);
+          if (p.googleMapsUrl) setField('fGoogleMaps', p.googleMapsUrl);
+          if (p.industry) document.getElementById('fIndustry').value = p.industry;
+
+          // Apply Google checks
+          if (p.googleChecks) {
+            const gKeyMap = ['hasListing','nameCorrect','addressCorrect','phoneVisible','websiteLinked','categoryCorrect','photosAvailable','recentActivity','reviewsAvailable','respondsToReviews','mapsVisibility','reviewSystem'];
+            gKeyMap.forEach((key, i) => {
+              if (p.googleChecks[key] !== undefined) {
+                state.googleChecks[i] = p.googleChecks[key];
+                const el = document.getElementById(`cl_googleChecks_${i}`);
+                if (el) { el.querySelector('input').checked = p.googleChecks[key]; el.classList.toggle('checked', p.googleChecks[key]); }
+              }
+            });
+          }
+
+          // Apply Website checks
+          if (p.websiteChecks) {
+            const wKeyMap = ['exists','mobileResponsive','https','professionalDesign','servicesClear','clearCTA','whatsappButton','contactForm','googleMapsEmbed','seoMetadata','fastLoading','socialLinks','bookingSystem','conversionPath'];
+            wKeyMap.forEach((key, i) => {
+              if (p.websiteChecks[key] !== undefined) {
+                state.websiteChecks[i] = p.websiteChecks[key];
+                const el = document.getElementById(`cl_websiteChecks_${i}`);
+                if (el) { el.querySelector('input').checked = p.websiteChecks[key]; el.classList.toggle('checked', p.websiteChecks[key]); }
+              }
+            });
+          }
+
+          // Apply Social checks
+          if (p.socialChecks) {
+            const sKeyMap = ['profileActive','recentPosts','engagementPresent','contactInfoVisible','linkedToWebsite','whatsappIntegrated','contentQuality','ctaPresent','crossPlatformPresence','brandConsistent'];
+            sKeyMap.forEach((key, i) => {
+              if (p.socialChecks[key] !== undefined) {
+                state.socialChecks[i] = p.socialChecks[key];
+                const el = document.getElementById(`cl_socialChecks_${i}`);
+                if (el) { el.querySelector('input').checked = p.socialChecks[key]; el.classList.toggle('checked', p.socialChecks[key]); }
+              }
+            });
+          }
+
+          // Apply Ad checks
+          if (p.adChecks) {
+            const aKeyMap = ['landingPageReady','conversionTracking','whatsappCTA','strongOffer','professionalCreative','audienceDefined','leadCapture','followUpProcess','retargeting'];
+            aKeyMap.forEach((key, i) => {
+              if (p.adChecks[key] !== undefined) {
+                state.adChecks[i] = p.adChecks[key];
+                const el = document.getElementById(`cl_adChecks_${i}`);
+                if (el) { el.querySelector('input').checked = p.adChecks[key]; el.classList.toggle('checked', p.adChecks[key]); }
+              }
+            });
+          }
+
+          // Apply notes
+          if (p.googleNotes) setField('fGoogleNotes', p.googleNotes);
+          if (p.websiteNotes) setField('fWebsiteNotes', p.websiteNotes);
+          if (p.socialNotes) setField('fSocialNotes', p.socialNotes);
+          if (p.adNotes) setField('fAdNotes', p.adNotes);
+
+          // Apply funnel gap
+          if (p.funnelGap) document.getElementById('fFunnelGap').value = p.funnelGap;
+
           // Apply top issues
-          if (parsed.topIssues) {
+          if (p.topIssues) {
             const probFields = ['fTop1Prob','fTop2Prob','fTop3Prob'];
             const impactFields = ['fTop1Impact','fTop2Impact','fTop3Impact'];
             const solFields = ['fTop1Sol','fTop2Sol','fTop3Sol'];
-            parsed.topIssues.slice(0, 3).forEach((issue, i) => {
+            p.topIssues.slice(0, 3).forEach((issue, i) => {
               if (issue.problem) document.getElementById(probFields[i]).value = issue.problem;
               if (issue.impact) document.getElementById(impactFields[i]).value = issue.impact;
               if (issue.solution) document.getElementById(solFields[i]).value = issue.solution;
             });
           }
-          // Apply funnel gap
-          if (parsed.funnelGap) document.getElementById('fFunnelGap').value = parsed.funnelGap;
+
           // Apply recommendations
-          if (parsed.recommendations) {
+          if (p.recommendations) {
             const recFields = ['fRec1','fRec2','fRec3','fRec4','fRec5'];
-            parsed.recommendations.slice(0, 5).forEach((rec, i) => {
+            p.recommendations.slice(0, 5).forEach((rec, i) => {
               if (rec) document.getElementById(recFields[i]).value = rec;
             });
           }
-          showAIStatus(`AI deep analysis complete! Score: ${scores.google + scores.website + scores.social + scores.funnel + scores.ad}/100`, 'success');
+
+          const total = scores.google + scores.website + scores.social + scores.funnel + scores.ad;
+          showAIStatus(`Professional audit complete! Score: ${total}/100. All form data filled.`, 'success');
         }
       } catch(e) {
         console.log('AI API error:', e.message);
