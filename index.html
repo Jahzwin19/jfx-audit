@@ -1202,12 +1202,11 @@ function generateReport() {
     <h2>Ready to Improve Your Digital Customer Journey?</h2>
     <p>JFX Digital Global Tech — Digital solutions for businesses in Sapele and beyond</p>
     <div class="cta-contact">
-      <a href="#">🌐 jfxdigitalglobal.com</a>
-      <a href="#">💬 WhatsApp</a>
-      <a href="#">📞 Phone</a>
-      <a href="#">✉️ Email</a>
+      <a href="https://wa.me/2348148402949?text=Hello%20JFX%20Digital%20Global%20Tech" target="_blank">💬 WhatsApp: 08148402949</a>
+      <a href="tel:+2348148402949">📞 Phone: 08148402949</a>
+      <a href="mailto:jfxdigitalglobaltech@gmail.com">✉️ Email: jfxdigitalglobaltech@gmail.com</a>
     </div>
-    <a href="#" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--emerald);color:var(--white);text-decoration:none;border-radius:30px;font-size:16px;font-weight:700;transition:all .2s">Book a Free 15-Minute Digital Consultation</a>
+    <a href="https://wa.me/2348148402949?text=Hello%20JFX%20Digital%20Global%20Tech%2C%20I%27d%20like%20to%20book%20a%20free%2015-minute%20digital%20consultation." target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--emerald);color:var(--white);text-decoration:none;border-radius:30px;font-size:16px;font-weight:700;transition:all .2s">Book a Free 15-Minute Digital Consultation</a>
   `;
 
   // 13. INTERNAL
@@ -1453,6 +1452,11 @@ function loadFromStorage() {
 // ============================================================
 let aiProvider = 'free';
 let aiAnalyzing = false;
+const CORS_PROXIES = [
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+];
 
 function openAIModal() {
   document.getElementById('aiModal').classList.add('active');
@@ -1491,113 +1495,333 @@ function hideAIProgress() {
   document.getElementById('aiProgress').classList.remove('active');
 }
 
-// Browser-based research
-async function fetchPage(url, timeout = 8000) {
+// CORS-safe fetch with proxy fallback
+async function fetchPage(url, timeout = 10000) {
+  // Try direct first
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeout);
     const resp = await fetch(url, { signal: ctrl.signal, mode: 'cors' });
     clearTimeout(timer);
-    if (!resp.ok) return null;
-    return await resp.text();
-  } catch(e) { return null; }
+    if (resp.ok) return await resp.text();
+  } catch(e) {}
+
+  // Try each CORS proxy
+  for (const proxyFn of CORS_PROXIES) {
+    try {
+      const proxyUrl = proxyFn(url);
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), timeout);
+      const resp = await fetch(proxyUrl, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (resp.ok) return await resp.text();
+    } catch(e) {}
+  }
+  return null;
 }
 
-function extractMeta(html) {
+// Google search via scraping
+async function searchGoogle(query) {
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en`;
+  const html = await fetchPage(searchUrl);
+  if (!html) return null;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const results = [];
+  doc.querySelectorAll('div.g, div[data-sokoban-container]').forEach(el => {
+    const title = el.querySelector('h3')?.textContent || '';
+    const link = el.querySelector('a')?.href || '';
+    const snippet = el.querySelector('[data-sncf], .VwiC3b, .st')?.textContent || '';
+    if (title && link) results.push({ title, link, snippet });
+  });
+  return results.length > 0 ? results : null;
+}
+
+// Fetch Google Maps + business info from search
+async function checkGoogleMaps(businessName, location) {
+  const query = `${businessName} ${location || ''}`;
+  const results = await searchGoogle(query);
+  const allSnippets = results ? results.map(r => r.snippet + ' ' + r.title).join(' ') : '';
+
+  // Extract real data from search results
+  const addressMatch = allSnippets.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
+    || allSnippets.match(/(Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun)[^.\n]{5,80}/i);
+  const phoneMatch = allSnippets.match(/(\+?234[\s-]?\d{10}|\+?234[\s-]?\d{3}[\s-]?\d{4}[\s-]?\d{3}|0\d{10}|0\d{3}[\s-]?\d{3}[\s-]?\d{4})/);
+  const reviewMatch = allSnippets.match(/(\d+(?:\.\d+)?)\s*(?:star|rating|review)/i)
+    || allSnippets.match(/(\d+(?:\.\d+)?)\s*\/\s*5/);
+  const reviewCountMatch = allSnippets.match(/(\d+)\s*(?:review|rating)/i);
+  const mapsResult = results?.find(r => r.link.includes('google.com/maps') || r.link.includes('g.co'));
+  const categoryMatch = allSnippets.match(/(?:category|type|specializ|service|we\s+are|we\s+offer)\s*:?\s*([^\n.]{5,60})/i);
+
+  return {
+    hasMapsListing: !!mapsResult,
+    hasReviews: !!reviewMatch || !!reviewCountMatch || allSnippets.includes('review'),
+    mapsUrl: mapsResult?.link || null,
+    reviewSnippet: results?.find(r => /review|star|rating/i.test(r.snippet))?.snippet || null,
+    rating: reviewMatch ? reviewMatch[1] : null,
+    reviewCount: reviewCountMatch ? reviewCountMatch[1] : null,
+    address: addressMatch ? addressMatch[1]?.trim() || addressMatch[0]?.trim() : null,
+    phone: phoneMatch ? phoneMatch[0].trim() : null,
+    category: categoryMatch ? categoryMatch[1].trim() : null,
+    allSnippets
+  };
+}
+
+// Search for general business info
+async function searchBusinessInfo(businessName, location) {
+  const query = `${businessName} ${location || ''} contact phone address`;
+  const results = await searchGoogle(query);
+  const allText = results ? results.map(r => r.snippet + ' ' + r.title).join(' ') : '';
+
+  const phoneMatch = allText.match(/(\+?234[\s-]?\d{10}|\+?234[\s-]?\d{3}[\s-]?\d{4}[\s-]?\d{3}|0\d{10}|0\d{3}[\s-]?\d{3}[\s-]?\d{4})/);
+  const emailMatch = allText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const addressMatch = allText.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
+    || allText.match(/(Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun)[^.\n]{5,80}/i);
+
+  return {
+    phone: phoneMatch ? phoneMatch[0].trim() : null,
+    email: emailMatch ? emailMatch[0] : null,
+    address: addressMatch ? addressMatch[1]?.trim() || addressMatch[0]?.trim() : null,
+    allText
+  };
+}
+
+// Check social media presence via search
+async function checkSocialPresence(businessName) {
+  const platforms = { facebook: null, instagram: null, tiktok: null };
+
+  // Check Facebook
+  const fbResults = await searchGoogle(`"${businessName}" site:facebook.com`);
+  if (fbResults && fbResults.length > 0) {
+    const fbPage = fbResults.find(r => r.link.includes('facebook.com/'));
+    platforms.facebook = fbPage?.link || 'found';
+  }
+
+  // Check Instagram
+  const igResults = await searchGoogle(`"${businessName}" site:instagram.com`);
+  if (igResults && igResults.length > 0) {
+    const igPage = igResults.find(r => r.link.includes('instagram.com/'));
+    platforms.instagram = igPage?.link || 'found';
+  }
+
+  // Check TikTok
+  const ttResults = await searchGoogle(`"${businessName}" site:tiktok.com`);
+  if (ttResults && ttResults.length > 0) {
+    const ttPage = ttResults.find(r => r.link.includes('tiktok.com/'));
+    platforms.tiktok = ttPage?.link || 'found';
+  }
+
+  return platforms;
+}
+
+function extractMeta(html, url) {
   if (!html) return {};
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const get = (sel) => doc.querySelector(sel)?.content || '';
   const getTxt = (sel) => doc.querySelector(sel)?.textContent?.trim() || '';
+
+  const bodyText = doc.body?.textContent || '';
+  const bodyLower = bodyText.toLowerCase();
+  const allLinks = Array.from(doc.querySelectorAll('a[href]')).map(a => a.href).join(' ');
+  const allImages = doc.querySelectorAll('img').length;
+  const forms = doc.querySelectorAll('form').length;
+  const hasViewport = html.includes('viewport');
+
+  // Extract REAL business info
+  const pageTitle = getTxt('title');
+  const description = get('meta[name="description"]');
+  const ogTitle = get('meta[property="og:title"]');
+  const ogDesc = get('meta[property="og:description"]');
+
+  // Extract phone numbers
+  const phoneMatch = bodyText.match(/(\+?234[\s-]?\d{10}|\+?234[\s-]?\d{3}[\s-]?\d{4}[\s-]?\d{3}|0\d{10}|0\d{3}[\s-]?\d{3}[\s-]?\d{4})/);
+  const phone = phoneMatch ? phoneMatch[0].trim() : null;
+
+  // Extract email
+  const emailMatch = bodyText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const email = emailMatch ? emailMatch[0] : null;
+
+  // Extract address/location
+  const addressPatterns = [
+    /(?:address|location|visit|find\s+us|office|headquarters)[:\s]*([^\n]{10,100})/i,
+    /(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Road|Rd)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i,
+    /(Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun)[^,\n]*/i
+  ];
+  let address = null;
+  for (const pattern of addressPatterns) {
+    const match = bodyText.match(pattern);
+    if (match) { address = match[1] || match[0]; break; }
+  }
+
+  // Extract services/products mentioned
+  const servicePatterns = [
+    /(?:our\s+services?|what\s+we\s+do|services?\s+include|we\s+offer|we\s+provide)[:\s]*([^\n]{20,300})/i,
+    /(?:services?|products?|solutions?|offerings?)[:\s]*([^\n]{20,300})/i
+  ];
+  let services = null;
+  for (const pattern of servicePatterns) {
+    const match = bodyText.match(pattern);
+    if (match) { services = match[1] || match[0]; break; }
+  }
+
+  // Extract business description from meta or first paragraph
+  const firstParagraph = doc.querySelector('p')?.textContent?.trim() || '';
+  const businessDesc = description || ogDesc || firstParagraph.substring(0, 200);
+
+  // Extract social links
+  const fbLink = html.match(/facebook\.com\/[^"'\s<>]+/)?.[0] || null;
+  const igLink = html.match(/instagram\.com\/[^"'\s<>]+/)?.[0] || null;
+  const ttLink = html.match(/tiktok\.com\/@[^"'\s<>]+/)?.[0] || null;
+  const waLink = html.match(/wa\.me\/\d+/)?.[0] || html.match(/api\.whatsapp\.com\/send\?phone=\d+/)?.[0] || null;
+
+  // Extract WhatsApp number
+  const waMatch = html.match(/wa\.me\/(\d+)/) || html.match(/api\.whatsapp\.com\/send\?phone=(\d+)/);
+  const whatsappNumber = waMatch ? waMatch[1] : null;
+
+  // Check for specific features
+  const hasGoogleMaps = html.includes('google.com/maps') || html.includes('maps.google') || html.includes('iframe') && html.includes('google');
+  const hasWhatsApp = html.includes('wa.me') || html.includes('whatsapp') || html.includes('api.whatsapp');
+  const hasPhone = html.includes('tel:') || !!phoneMatch;
+  const hasEmail = html.includes('mailto:') || !!emailMatch;
+  const hasContactForm = forms > 0 || (bodyLower.includes('contact') && bodyLower.includes('form'));
+  const hasCTA = /book|enquir|contact|get.*quote|request|call|whatsapp|order|reserve|buy|purchase|subscribe/i.test(bodyText);
+  const hasBooking = bodyLower.includes('booking') || bodyLower.includes('appointment') || bodyLower.includes('schedule') || bodyLower.includes('reservation');
+  const hasSocial = html.includes('facebook.com') || html.includes('instagram.com') || html.includes('tiktok.com');
+  const hasSchema = html.includes('application/ld+json');
+  const hasHTTPS = url ? url.startsWith('https') : false;
+  const hasFooter = html.includes('<footer');
+  const hasNav = html.includes('<nav') || html.includes('menu');
+  const hasTestimonials = bodyLower.includes('testimonial') || bodyLower.includes('review') || bodyLower.includes('what.*say') || bodyLower.includes('client');
+  const hasAbout = bodyLower.includes('about us') || bodyLower.includes('about') || bodyLower.includes('our story') || bodyLower.includes('who we are');
+  const hasServices = bodyLower.includes('service') || bodyLower.includes('product') || bodyLower.includes('offer') || bodyLower.includes('what we');
+  const hasPricing = bodyLower.includes('price') || bodyLower.includes('pricing') || bodyLower.includes('cost') || bodyLower.includes('rate');
+  const hasTeam = bodyLower.includes('team') || bodyLower.includes('our team') || bodyLower.includes('staff') || bodyLower.includes('meet the');
+  const hasBlog = bodyLower.includes('blog') || bodyLower.includes('news') || bodyLower.includes('article');
+  const hasGallery = allImages > 5 || bodyLower.includes('gallery') || bodyLower.includes('portfolio');
+
   return {
-    title: getTxt('title'),
-    description: get('meta[name="description"]'),
-    keywords: get('meta[name="keywords"]'),
-    ogTitle: get('meta[property="og:title"]'),
-    ogDesc: get('meta[property="og:description"]'),
-    hasWhatsApp: html.includes('wa.me') || html.includes('whatsapp') || html.includes('api.whatsapp'),
-    hasContactForm: html.includes('contact') && (html.includes('form') || html.includes('mailto:')),
-    hasPhone: html.includes('tel:') || /(\+?\d{10,})/.test(html),
-    hasMaps: html.includes('google.com/maps') || html.includes('maps.google'),
-    hasHTTPS: url.startsWith('https'),
-    hasSocial: html.includes('facebook.com') || html.includes('instagram.com') || html.includes('tiktok.com'),
-    hasCTA: /book|enquir|contact|get.*quote|request|call|whatsapp/i.test(html),
-    hasBooking: html.includes('booking') || html.includes('appointment') || html.includes('schedule'),
-    bodyLength: html.length,
-    hasImages: (html.match(/<img/g) || []).length,
-    hasNav: html.includes('<nav') || html.includes('menu'),
-    hasFooter: html.includes('<footer'),
-    hasSchema: html.includes('application/ld+json'),
-    htmlSnippet: html.substring(0, 3000)
+    // REAL business info
+    pageTitle, description, ogTitle, ogDesc, businessDesc,
+    phone, email, address, services,
+    fbLink, igLink, ttLink, waLink, whatsappNumber,
+    // Feature checks
+    hasWhatsApp, hasContactForm, hasPhone, hasEmail,
+    hasMaps: hasGoogleMaps, hasHTTPS, hasSocial, hasCTA, hasBooking,
+    hasSchema, hasFooter, hasNav, hasViewport, hasTestimonials,
+    hasAbout, hasServices, hasPricing, hasTeam, hasBlog, hasGallery,
+    // Counts
+    bodyLength: html.length, hasImages: allImages, forms,
+    linkCount: (allLinks.match(/https?:\/\//g) || []).length,
+    htmlSnippet: html.substring(0, 5000)
   };
 }
 
-function checkSocialProfiles(html) {
-  if (!html) return {};
-  const fb = html.match(/facebook\.com\/[^"'\s<>]+/);
-  const ig = html.match(/instagram\.com\/[^"'\s<>]+/);
-  const tk = html.match(/tiktok\.com\/@[^"'\s<>]+/);
-  return { facebook: fb?.[0] || null, instagram: ig?.[0] || null, tiktok: tk?.[0] || null };
-}
+// ============================================================
+// ANALYZE AND FILL — Uses REAL business data, shows N/A for missing
+// ============================================================
+function analyzeAndFill(websiteData, googleData, socialData, bizName) {
+  const results = { google: 0, website: 0, social: 0, ad: 0, funnel: 0 };
+  const realName = bizName || websiteData?.pageTitle?.split('|')[0]?.split('-')[0]?.trim() || 'N/A';
+  const NA = 'N/A';
 
-// Analyze and auto-fill checklist
-function analyzeAndFill(websiteData, googleData, socialData, businessName) {
-  const results = { google: 0, website: 0, social: 0, ad: 0 };
+  // Helper: set field value (always sets, uses N/A for empty)
+  function setField(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val || NA;
+  }
 
-  // Google checks (inferred from website + presence)
+  // ---- AUTO-FILL ALL URL FIELDS ----
+  setField('fFacebook', socialData?.facebook);
+  setField('fInstagram', socialData?.instagram);
+  setField('fTiktok', socialData?.tiktok);
+  setField('fGoogleMaps', googleData?.mapsUrl);
+  setField('fPhone', websiteData?.phone || googleData?.phone);
+  setField('fEmail', websiteData?.email);
+  setField('fWhatsApp', websiteData?.whatsappNumber);
+  setField('fLocation', websiteData?.address || googleData?.address);
+
+  // ---- AUTO-DETECT INDUSTRY ----
+  if (!document.getElementById('fIndustry').value) {
+    const snippet = (websiteData?.htmlSnippet || '').toLowerCase();
+    const allText = (googleData?.allSnippets || '').toLowerCase() + ' ' + snippet;
+    const industryMap = [
+      ['real estate', /real\s*estate|property|house|land|apartment|mortgage|realtor|letting|rent/i],
+      ['hotel & hospitality', /hotel|lodge|resort|accommodation|hospitality|inn|guest\s*house|bnb/i],
+      ['event centre', /event\s*centre|venue|hall|banquet|conference|party|celebration|wedding/i],
+      ['auto dealer', /auto|car\s*deal|vehicle|motor|dealership|automobile|truck|saloon|suv/i],
+      ['restaurant', /restaurant|food|dining|cuisine|meal|kitchen|eatery|barbecue|bbq/i],
+      ['lounge & bar', /lounge|bar|pub|cocktail|nightlife|drinks|shisha|club/i],
+      ['health & medical', /medical|health|clinic|hospital|doctor|patient|dental|pharmacy|wellness/i],
+      ['legal services', /legal|law|lawyer|attorney|solicitor|court|firm|barrister/i],
+      ['education', /school|education|university|college|academy|training|learning|institute/i],
+      ['technology', /tech|software|digital|IT|computer|cyber|app|SaaS|solution/i],
+      ['retail & fashion', /fashion|retail|clothing|boutique|shop|store|wear|style/i],
+      ['beauty & wellness', /beauty|salon|spa|wellness|cosmetic|barber|skincare|hair|nail/i],
+      ['construction', /construction|building|contractor|renovation|plumbing|electrical|engineer/i],
+      ['logistics', /logistics|delivery|shipping|transport|courier|freight|warehouse/i]
+    ];
+    let detected = NA;
+    for (const [industry, regex] of industryMap) {
+      if (regex.test(allText)) { detected = industry; break; }
+    }
+    document.getElementById('fIndustry').value = detected;
+    if (detected !== NA) {
+      document.querySelectorAll('.industry-tag').forEach(tag => {
+        tag.classList.remove('active');
+        if (tag.textContent.toLowerCase() === detected) tag.classList.add('active');
+      });
+    }
+  }
+
+  // ---- GOOGLE CHECKS ----
   const gChecks = {
-    0: !!googleData || (websiteData && websiteData.bodyLength > 1000),
+    0: googleData?.hasMapsListing || (websiteData && websiteData.bodyLength > 1000),
     1: true, 2: true, 3: true,
     4: websiteData && websiteData.bodyLength > 1000,
-    5: true, 6: googleData && googleData.hasPhotos,
-    7: false, 8: googleData && googleData.hasReviews,
-    9: false, 10: !!googleData,
+    5: true,
+    6: googleData?.hasMapsListing || false,
+    7: false,
+    8: googleData?.hasReviews || false,
+    9: false,
+    10: googleData?.hasMapsListing || false,
     11: false
   };
   Object.keys(gChecks).forEach(i => {
     state.googleChecks[i] = gChecks[i];
     const el = document.getElementById(`cl_googleChecks_${i}`);
-    if (el) {
-      el.querySelector('input').checked = gChecks[i];
-      el.classList.toggle('checked', gChecks[i]);
-    }
+    if (el) { el.querySelector('input').checked = gChecks[i]; el.classList.toggle('checked', gChecks[i]); }
     if (gChecks[i]) results.google++;
   });
 
-  // Website checks
+  // ---- WEBSITE CHECKS ----
   const wChecks = {
     0: websiteData && websiteData.bodyLength > 1000,
-    1: websiteData ? (websiteData.htmlSnippet.includes('viewport') || websiteData.htmlSnippet.includes('responsive')) : false,
+    1: websiteData?.hasViewport || false,
     2: websiteData?.hasHTTPS || false,
-    3: websiteData && websiteData.hasImages > 2 && websiteData.hasNav,
-    4: websiteData && websiteData.bodyLength > 3000,
+    3: websiteData && websiteData.bodyLength > 3000 && websiteData.hasImages > 2,
+    4: websiteData?.hasServices || (websiteData && websiteData.bodyLength > 5000),
     5: websiteData?.hasCTA || false,
     6: websiteData?.hasWhatsApp || false,
-    7: websiteData?.hasContactForm || false,
+    7: websiteData?.hasContactForm || websiteData?.hasEmail || false,
     8: websiteData?.hasMaps || false,
     9: websiteData?.hasSchema || false,
     10: websiteData && websiteData.bodyLength > 2000,
     11: websiteData?.hasSocial || false,
     12: websiteData?.hasBooking || false,
-    13: websiteData?.hasBooking || websiteData?.hasContactForm || false
+    13: websiteData?.hasBooking || websiteData?.hasContactForm || websiteData?.hasEmail || false
   };
   Object.keys(wChecks).forEach(i => {
     state.websiteChecks[i] = wChecks[i];
     const el = document.getElementById(`cl_websiteChecks_${i}`);
-    if (el) {
-      el.querySelector('input').checked = wChecks[i];
-      el.classList.toggle('checked', wChecks[i]);
-    }
+    if (el) { el.querySelector('input').checked = wChecks[i]; el.classList.toggle('checked', wChecks[i]); }
     if (wChecks[i]) results.website++;
   });
 
-  // Social checks
+  // ---- SOCIAL PLATFORMS ----
   const socialPlatforms = { facebook: 'no', instagram: 'no', tiktok: 'no' };
   if (socialData?.facebook) socialPlatforms.facebook = 'yes';
   if (socialData?.instagram) socialPlatforms.instagram = 'yes';
   if (socialData?.tiktok) socialPlatforms.tiktok = 'yes';
   state.socialPlatform = socialPlatforms;
-
-  // Update social platform buttons
   Object.keys(socialPlatforms).forEach(plat => {
     document.querySelectorAll(`.social-opt[data-platform="${plat}"]`).forEach(btn => {
       btn.classList.remove('active');
@@ -1605,136 +1829,1153 @@ function analyzeAndFill(websiteData, googleData, socialData, businessName) {
     });
   });
 
+  // ---- SOCIAL CHECKS ----
+  const hasAnySocial = socialPlatforms.facebook === 'yes' || socialPlatforms.instagram === 'yes' || socialPlatforms.tiktok === 'yes';
   const sChecks = {
-    0: socialPlatforms.facebook === 'yes' || socialPlatforms.instagram === 'yes' || socialPlatforms.tiktok === 'yes',
-    1: false, 2: false, 3: false,
-    4: websiteData?.hasSocial || false,
+    0: hasAnySocial, 1: hasAnySocial, 2: hasAnySocial, 3: hasAnySocial,
+    4: websiteData?.hasSocial || hasAnySocial,
     5: websiteData?.hasWhatsApp || false,
-    6: false, 7: false, 8: false, 9: false
+    6: hasAnySocial, 7: websiteData?.hasCTA || false,
+    8: hasAnySocial, 9: hasAnySocial
   };
   Object.keys(sChecks).forEach(i => {
     state.socialChecks[i] = sChecks[i];
     const el = document.getElementById(`cl_socialChecks_${i}`);
-    if (el) {
-      el.querySelector('input').checked = sChecks[i];
-      el.classList.toggle('checked', sChecks[i]);
-    }
+    if (el) { el.querySelector('input').checked = sChecks[i]; el.classList.toggle('checked', sChecks[i]); }
     if (sChecks[i]) results.social++;
   });
 
-  // Ad checks
-  const aChecks = {
-    0: websiteData && websiteData.bodyLength > 1000,
-    1: false, 2: websiteData?.hasWhatsApp || false,
-    3: websiteData?.hasCTA || false,
-    4: false, 5: false, 6: false,
-    7: false, 8: false
-  };
-  Object.keys(aChecks).forEach(i => {
-    state.adChecks[i] = aChecks[i];
+  // ---- AD CHECKS — Manual, leave unchecked ----
+  [0,1,2,3,4,5,6,7,8].forEach(i => {
+    state.adChecks[i] = false;
     const el = document.getElementById(`cl_adChecks_${i}`);
-    if (el) {
-      el.querySelector('input').checked = aChecks[i];
-      el.classList.toggle('checked', aChecks[i]);
-    }
-    if (aChecks[i]) results.ad++;
+    if (el) { el.querySelector('input').checked = false; el.classList.remove('checked'); }
   });
 
-  // Auto-fill Top 3 based on findings
+  // ---- FILL NOTES FIELDS with real findings + contact info ----
+  // Get form values as fallback
+  const formPhone = document.getElementById('fPhone')?.value || '';
+  const formEmail = document.getElementById('fEmail')?.value || '';
+  const formLocation = document.getElementById('fLocation')?.value || '';
+  const formWA = document.getElementById('fWhatsApp')?.value || '';
+
+  // Google notes
+  const gNotes = [];
+  if (googleData?.hasMapsListing) gNotes.push(`Google Maps listing found: ${googleData.mapsUrl || 'Yes'}`);
+  if (googleData?.hasReviews) gNotes.push(`Reviews found${googleData.rating ? ' — Rating: ' + googleData.rating + '/5' : ''}${googleData.reviewCount ? ' (' + googleData.reviewCount + ' reviews)' : ''}`);
+  const gAddress = googleData?.address || formLocation || '';
+  const gPhone = googleData?.phone || formPhone || '';
+  const gEmail = googleData?.email || formEmail || '';
+  if (gAddress) gNotes.push(`Address: ${gAddress}`);
+  if (gPhone) gNotes.push(`Phone: ${gPhone}`);
+  if (gEmail) gNotes.push(`Email: ${gEmail}`);
+  if (googleData?.category) gNotes.push(`Category: ${googleData.category}`);
+  if (gNotes.length === 0) gNotes.push('No Google Business Profile data found via search');
+  setField('fGoogleNotes', gNotes.join('. '));
+
+  // Website notes
+  const wNotes = [];
+  if (websiteData) {
+    wNotes.push(`Website: ${websiteData.pageTitle || 'No title'}`);
+    if (websiteData.description) wNotes.push(`Description: ${websiteData.description.substring(0, 150)}`);
+    if (websiteData.phone || gPhone) wNotes.push(`Phone: ${websiteData.phone || gPhone}`);
+    if (websiteData.email || gEmail) wNotes.push(`Email: ${websiteData.email || gEmail}`);
+    if (websiteData.address || gAddress) wNotes.push(`Address: ${websiteData.address || gAddress}`);
+    if (websiteData.services) wNotes.push(`Services mentioned: ${websiteData.services.substring(0, 150)}`);
+    const features = [];
+    if (websiteData.hasWhatsApp || formWA) features.push('WhatsApp');
+    if (websiteData.hasContactForm) features.push('Contact Form');
+    if (websiteData.hasPhone || gPhone) features.push('Phone');
+    if (websiteData.hasEmail || gEmail) features.push('Email');
+    if (websiteData.hasMaps) features.push('Google Maps');
+    if (websiteData.hasBooking) features.push('Booking');
+    if (websiteData.hasSchema) features.push('SEO Schema');
+    if (websiteData.hasTestimonials) features.push('Testimonials');
+    if (features.length > 0) wNotes.push(`Features found: ${features.join(', ')}`);
+    const missing = [];
+    if (!websiteData.hasWhatsApp && !formWA) missing.push('WhatsApp');
+    if (!websiteData.hasContactForm && !websiteData.hasEmail && !gEmail) missing.push('Contact method');
+    if (!websiteData.hasMaps) missing.push('Google Maps');
+    if (!websiteData.hasSchema) missing.push('SEO Schema');
+    if (!websiteData.hasTestimonials) missing.push('Testimonials');
+    if (missing.length > 0) wNotes.push(`Missing: ${missing.join(', ')}`);
+  } else {
+    if (gPhone || gEmail || gAddress) {
+      wNotes.push(`No website fetched. Contact info from search: ${[gPhone, gEmail, gAddress].filter(Boolean).join(', ')}`);
+    } else {
+      wNotes.push('No website found or website could not be fetched');
+    }
+  }
+  setField('fWebsiteNotes', wNotes.join('. '));
+
+  // Social notes
+  const sNotes = [];
+  if (socialPlatforms.facebook === 'yes') sNotes.push(`Facebook: ${socialData.facebook || 'Found'}`);
+  else sNotes.push('Facebook: Not found');
+  if (socialPlatforms.instagram === 'yes') sNotes.push(`Instagram: ${socialData.instagram || 'Found'}`);
+  else sNotes.push('Instagram: Not found');
+  if (socialPlatforms.tiktok === 'yes') sNotes.push(`TikTok: ${socialData.tiktok || 'Found'}`);
+  else sNotes.push('TikTok: Not found');
+  if (websiteData?.hasSocial) sNotes.push('Social links found on website');
+  setField('fSocialNotes', sNotes.join('. '));
+
+  // Ad notes — only if business needs ads
+  const hasBasicInfra = websiteData && websiteData.bodyLength > 1000;
+  const hasConversion = websiteData?.hasWhatsApp || websiteData?.hasContactForm || websiteData?.hasEmail;
+  if (hasBasicInfra && hasConversion) {
+    setField('fAdNotes', `Advertising recommended. Website has basic infrastructure (${websiteData.hasWhatsApp ? 'WhatsApp' : ''} ${websiteData.hasContactForm ? 'Contact Form' : ''} ${websiteData.hasEmail ? 'Email' : ''}). Conversion tracking needed before scaling ads.`);
+  } else {
+    setField('fAdNotes', 'Fix conversion infrastructure before running ads. No clear conversion path detected.');
+  }
+
+  // ---- AUTO-GENERATE DEMO WEBSITE ----
+  const industry = document.getElementById('fIndustry')?.value || '';
+  generateDemoWebsite(realName, websiteData, googleData, socialData, industry);
+
+  // ---- TOP 3 OPPORTUNITIES — Real business name ----
   const gaps = [];
   if (!websiteData || websiteData.bodyLength < 1000) {
     gaps.push({
-      prob: 'No verified professional website found',
-      impact: 'Prospective customers who search for the business online cannot find a professional digital presence, reducing trust and enquiry volume.',
-      sol: 'Build a professional, conversion-optimized website with clear services, WhatsApp integration, and contact forms.'
+      prob: `${realName} has no verified professional website that prospective customers can find`,
+      impact: `When customers search for ${realName} online, they cannot find a professional digital presence. This reduces trust and significantly limits enquiry volume from online searches.`,
+      sol: `Build a professional, conversion-optimized website for ${realName} with clear service information, WhatsApp integration, and contact forms.`
     });
   } else {
     if (!websiteData.hasWhatsApp) gaps.push({
-      prob: 'No WhatsApp integration on website',
-      impact: 'Prospective customers who prefer WhatsApp have no direct path to contact the business from the website.',
-      sol: 'Add WhatsApp click-to-chat button on all pages and contact section.'
+      prob: `${realName}'s website has no WhatsApp integration`,
+      impact: `Prospective customers who discover ${realName} online and prefer WhatsApp have no direct path to contact the business.`,
+      sol: `Add a WhatsApp click-to-chat button on all pages of ${realName}'s website.`
     });
     if (!websiteData.hasCTA) gaps.push({
-      prob: 'No clear call-to-action on website',
-      impact: 'Visitors may browse the site without taking any action, resulting in lost potential enquiries.',
-      sol: 'Add prominent CTAs for WhatsApp, phone, and contact form on every page.'
+      prob: `${realName}'s website lacks clear calls-to-action`,
+      impact: `Visitors to ${realName}'s website may browse the content but have no clear next step to take, resulting in lost potential enquiries.`,
+      sol: `Add prominent CTAs for WhatsApp, phone call, and contact form on every page of ${realName}'s website.`
     });
     if (!websiteData.hasSchema) gaps.push({
-      prob: 'Missing SEO metadata and structured data',
-      impact: 'The business may not appear in local search results or Google Business Knowledge Panel.',
-      sol: 'Implement SEO metadata, Open Graph tags, and schema markup for local business.'
+      prob: `${realName} is missing SEO metadata and structured data`,
+      impact: `${realName} may not appear in local search results or Google Business Knowledge Panel.`,
+      sol: `Implement SEO metadata, Open Graph tags, and local business schema markup on ${realName}'s website.`
+    });
+    if (!websiteData.hasContactForm && !websiteData.hasEmail) gaps.push({
+      prob: `${realName} has no contact form or email on the website`,
+      impact: `Visitors who want to send an enquiry to ${realName} have no way to do so from the website.`,
+      sol: `Add a simple contact form and display email address prominently on ${realName}'s website.`
+    });
+    if (!websiteData.hasMaps) gaps.push({
+      prob: `${realName}'s website has no Google Maps integration`,
+      impact: `Customers cannot easily find ${realName}'s physical location or get directions.`,
+      sol: `Embed Google Maps on ${realName}'s contact page.`
+    });
+    if (!websiteData.hasTestimonials) gaps.push({
+      prob: `${realName}'s website has no testimonials or social proof`,
+      impact: `New visitors have no validation from existing customers of ${realName}, reducing trust.`,
+      sol: `Add customer testimonials, reviews, or case studies to ${realName}'s website.`
     });
   }
   if (socialPlatforms.facebook === 'no' && socialPlatforms.instagram === 'no') {
     gaps.push({
-      prob: 'No active social media presence detected',
-      impact: 'The business is not reaching potential customers on platforms where they spend significant time daily.',
-      sol: 'Set up professional Facebook and Instagram profiles with consistent branding and content strategy.'
+      prob: `${realName} has no active social media presence`,
+      impact: `${realName} is not reaching potential customers on social media platforms.`,
+      sol: `Set up professional Facebook and Instagram profiles for ${realName}.`
     });
   }
   if (gaps.length < 3) {
     gaps.push({
-      prob: 'Limited online review generation system',
-      impact: 'Without a steady flow of reviews, the business may rank lower in local search and lose trust compared to competitors.',
-      sol: 'Implement a review acquisition system — follow up with customers via WhatsApp and ask for Google reviews.'
+      prob: `${realName} lacks a systematic review generation process`,
+      impact: `Without reviews, ${realName} may rank lower in local search and lose trust compared to competitors.`,
+      sol: `Implement a review acquisition system for ${realName}.`
     });
   }
 
-  // Fill top 3
-  const probFields = ['fTop1Prob','fTop2Prob','fTop3Prob'];
-  const impactFields = ['fTop1Impact','fTop2Impact','fTop3Impact'];
-  const solFields = ['fTop1Sol','fTop2Sol','fTop3Sol'];
-  gaps.slice(0, 3).forEach((g, i) => {
-    document.getElementById(probFields[i]).value = g.prob;
-    document.getElementById(impactFields[i]).value = g.impact;
-    document.getElementById(solFields[i]).value = g.sol;
-  });
+  ['fTop1Prob','fTop2Prob','fTop3Prob'].forEach((id, i) => setField(id, gaps[i]?.prob));
+  ['fTop1Impact','fTop2Impact','fTop3Impact'].forEach((id, i) => setField(id, gaps[i]?.impact));
+  ['fTop1Sol','fTop2Sol','fTop3Sol'].forEach((id, i) => setField(id, gaps[i]?.sol));
 
-  // Auto-fill funnel gap
+  // ---- FUNNEL GAP ----
   if (!websiteData || websiteData.bodyLength < 1000) {
-    document.getElementById('fFunnelGap').value = 'Customer can discover the business through word-of-mouth or social media, but there is no professional website or clear online journey from discovery to enquiry. This limits the business to existing networks only.';
+    setField('fFunnelGap', `Customers can discover ${realName} through word-of-mouth or social media, but there is no professional website or clear online journey from discovery to enquiry. This limits ${realName} to existing networks only.`);
   } else if (!websiteData.hasWhatsApp && !websiteData.hasContactForm) {
-    document.getElementById('fFunnelGap').value = 'Customer can find the business website but there is no clear, low-friction path from discovery to contact. Without WhatsApp or contact form, potential customers may leave without making an enquiry.';
+    setField('fFunnelGap', `Customers can find ${realName}'s website but there is no clear path from discovery to contact. Without WhatsApp or contact form, potential customers may leave without making an enquiry.`);
   } else {
-    document.getElementById('fFunnelGap').value = 'The conversion funnel has basic elements in place. Opportunities exist to strengthen the journey from discovery to enquiry through better CTAs, review generation, and social proof.';
+    setField('fFunnelGap', `The conversion funnel for ${realName} has basic elements in place. Opportunities exist to strengthen the journey from discovery to enquiry through better CTAs, review generation, and social proof.`);
   }
+
+  // ---- RECOMMENDATIONS — Always fill ----
+  const rec1 = (!websiteData || websiteData.bodyLength < 1000)
+    ? `Build a professional website for ${realName} with clear services, WhatsApp, and contact forms`
+    : `Optimize ${realName}'s existing website — add missing CTAs, WhatsApp button, and improve mobile experience`;
+  const rec2 = googleData?.hasMapsListing
+    ? `Optimize ${realName}'s Google Business Profile — add photos, respond to reviews, update hours`
+    : `Create and verify ${realName}'s Google Business Profile for local search visibility`;
+  const rec3 = `Set up WhatsApp enquiry system for ${realName} — click-to-chat on website, automated welcome message`;
+  const rec4 = hasAnySocial
+    ? `Develop content strategy for ${realName}'s existing social media — consistent posting, engagement, clear offers`
+    : `Create professional social media profiles for ${realName} on Facebook and Instagram`;
+  const rec5 = (hasBasicInfra && hasConversion)
+    ? `Run targeted Meta/Facebook ads for ${realName} — only after conversion infrastructure is ready`
+    : `Fix conversion infrastructure for ${realName} first — THEN consider advertising`;
+
+  setField('fRec1', rec1);
+  setField('fRec2', rec2);
+  setField('fRec3', rec3);
+  setField('fRec4', rec4);
+  setField('fRec5', rec5);
 
   return results;
 }
 
-// AI Analysis via API
+// ============================================================
+// INDUSTRY-SPECIFIC CONTENT FOR DEMO WEBSITES
+// ============================================================
+function getIndustryContent(industry, bizName, servicesText) {
+  const map = {
+    'real estate': {
+      heroImg: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80',
+      tagline: `Find Your Perfect ${bizName.includes('Property') ? 'Property' : 'Home'} With Us`,
+      aboutText: `${bizName} is a trusted name in real estate, helping clients find their dream homes and investment properties. With deep knowledge of the local market and a commitment to transparent dealings, we make property transactions seamless and stress-free.`,
+      accent: '#E67E22', accentGradient: 'linear-gradient(135deg,#E67E22,#D35400)',
+      services: [
+        { icon: '🏠', title: 'Property Sales', desc: 'Browse our curated selection of residential and commercial properties available for sale.' },
+        { icon: '🔑', title: 'Letting & Rentals', desc: 'Find the perfect rental property with flexible terms and competitive rates.' },
+        { icon: '📊', title: 'Property Valuation', desc: 'Get accurate market valuations for your property backed by data and expertise.' },
+        { icon: '🏗️', title: 'Land & Development', desc: 'Explore prime land opportunities for residential and commercial development.' },
+        { icon: '📋', title: 'Legal Documentation', desc: 'We handle all paperwork and legal processes for smooth property transactions.' },
+        { icon: '🤝', title: 'Consultation', desc: 'Free expert advice on property investment, market trends, and portfolio management.' }
+      ],
+      stats: [
+        { num: '500+', label: 'Properties Sold' },
+        { num: '98%', label: 'Client Satisfaction' },
+        { num: '15+', label: 'Years Experience' },
+        { num: '24/7', label: 'Support Available' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80', label: 'Luxury Villa' },
+        { img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80', label: 'Modern Apartment' },
+        { img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80', label: 'Commercial Space' },
+        { img: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80', label: 'Prime Land' }
+      ],
+      testimonials: [
+        { name: 'Chidi O.', role: 'Property Investor', quote: `${bizName} helped me find the perfect investment property. Their market knowledge is exceptional and the process was smooth from start to finish.` },
+        { name: 'Amina B.', role: 'First-time Buyer', quote: `As a first-time buyer, I was nervous. The team at ${bizName} guided me through every step. I'm now a proud homeowner!` },
+        { name: 'Emeka N.', role: 'Landlord', quote: `I've been using ${bizName} for my rental properties for years. Professional, reliable, and always delivers results.` }
+      ],
+      ctaText: 'Ready to Find Your Dream Property?'
+    },
+    'hotel & hospitality': {
+      heroImg: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80',
+      tagline: `Experience Luxury at ${bizName}`,
+      aboutText: `${bizName} offers a world-class hospitality experience with elegant rooms, exceptional dining, and personalized service. Whether you're here for business or leisure, we ensure your stay is unforgettable.`,
+      accent: '#8E44AD', accentGradient: 'linear-gradient(135deg,#8E44AD,#6C3483)',
+      services: [
+        { icon: '🛏️', title: 'Luxury Suites', desc: 'Elegantly furnished rooms with modern amenities and stunning views.' },
+        { icon: '🍽️', title: 'Fine Dining', desc: 'Award-winning restaurant serving local and international cuisine.' },
+        { icon: '🎉', title: 'Event Hosting', desc: 'Premium event spaces for weddings, conferences, and celebrations.' },
+        { icon: '💆', title: 'Spa & Wellness', desc: 'Relax and rejuvenate with our full-service spa and wellness center.' },
+        { icon: '🏋️', title: 'Fitness Center', desc: 'State-of-the-art gym facilities for health-conscious guests.' },
+        { icon: '🚗', title: 'Airport Transfer', desc: 'Complimentary pickup and drop-off service for guests.' }
+      ],
+      stats: [
+        { num: '200+', label: 'Luxury Rooms' },
+        { num: '4.9', label: 'Guest Rating' },
+        { num: '50+', label: 'Events Hosted' },
+        { num: '10K+', label: 'Happy Guests' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600&q=80', label: 'Deluxe Suite' },
+        { img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80', label: 'Fine Dining' },
+        { img: 'https://images.unsplash.com/photo-1540555700478-4be289fbec6d?w=600&q=80', label: 'Spa & Relaxation' },
+        { img: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80', label: 'Event Hall' }
+      ],
+      testimonials: [
+        { name: 'Fatima A.', role: 'Wedding Guest', quote: `${bizName} made our event absolutely magical. The staff went above and beyond to ensure everything was perfect.` },
+        { name: 'John D.', role: 'Business Traveler', quote: 'The best hotel experience I\'ve had. The rooms are beautiful and the service is impeccable. Will definitely return.' },
+        { name: 'Sarah M.', role: 'Vacation Guest', quote: `Our family vacation at ${bizName} was wonderful. The kids loved the pool and we loved the spa. Perfect getaway.` }
+      ],
+      ctaText: 'Book Your Unforgettable Stay'
+    },
+    'event centre': {
+      heroImg: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80',
+      tagline: `Make Every Event Memorable at ${bizName}`,
+      aboutText: `${bizName} is the premier event venue for weddings, conferences, birthdays, and corporate events. With state-of-the-art facilities and a dedicated events team, we bring your vision to life.`,
+      accent: '#E74C3C', accentGradient: 'linear-gradient(135deg,#E74C3C,#C0392B)',
+      services: [
+        { icon: '💒', title: 'Weddings', desc: 'Dream wedding setups with elegant decor and seamless coordination.' },
+        { icon: '🎤', title: 'Conferences', desc: 'Professional AV equipment and flexible seating for corporate events.' },
+        { icon: '🎂', title: 'Birthday Parties', desc: 'Fun and stylish birthday celebrations for all ages.' },
+        { icon: '🎤', title: 'Live Performances', desc: 'Stage and sound setup for concerts, comedy shows, and performances.' },
+        { icon: '🍽️', title: 'Catering Services', desc: 'In-house catering with customizable menus for any occasion.' },
+        { icon: '📸', title: 'Event Photography', desc: 'Professional photography and videography to capture every moment.' }
+      ],
+      stats: [
+        { num: '1000+', label: 'Events Hosted' },
+        { num: '500+', label: 'Weddings Done' },
+        { num: '5', label: 'Event Halls' },
+        { num: '100%', label: 'Satisfaction Rate' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80', label: 'Wedding Setup' },
+        { img: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=600&q=80', label: 'Corporate Event' },
+        { img: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80', label: 'Birthday Party' },
+        { img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80', label: 'Conference Hall' }
+      ],
+      testimonials: [
+        { name: 'Grace O.', role: 'Bride', quote: `${bizName} made our wedding day absolutely perfect. The venue was stunning and the staff was incredible.` },
+        { name: 'David K.', role: 'Event Planner', quote: 'I\'ve organized dozens of events at this venue. Always professional, always impressive. My go-to recommendation.' },
+        { name: 'Linda P.', role: 'Corporate Client', quote: `Our annual conference at ${bizName} was a huge success. The facilities are top-notch and the team is very supportive.` }
+      ],
+      ctaText: 'Plan Your Dream Event Today'
+    },
+    'auto dealer': {
+      heroImg: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&q=80',
+      tagline: `Drive Your Dream Car from ${bizName}`,
+      aboutText: `${bizName} is your trusted partner for quality vehicles. We offer a wide selection of cars, SUVs, and trucks — both new and pre-owned — with flexible financing options and warranty coverage.`,
+      accent: '#2C3E50', accentGradient: 'linear-gradient(135deg,#2C3E50,#1A252F)',
+      services: [
+        { icon: '🚗', title: 'New Cars', desc: 'Brand new vehicles from top manufacturers with full warranty.' },
+        { icon: '🚙', title: 'Pre-Owned Cars', desc: 'Certified pre-owned vehicles thoroughly inspected for quality.' },
+        { icon: '💰', title: 'Flexible Financing', desc: 'Affordable payment plans and trade-in options available.' },
+        { icon: '🔧', title: 'After-Sales Service', desc: 'Genuine parts and expert maintenance to keep your car running.' },
+        { icon: '📋', title: 'Documentation', desc: 'We handle all registration and documentation hassle-free.' },
+        { icon: '🛡️', title: 'Warranty Plans', desc: 'Extended warranty options for peace of mind.' }
+      ],
+      stats: [
+        { num: '300+', label: 'Cars in Stock' },
+        { num: '1000+', label: 'Cars Sold' },
+        { num: '50+', label: 'Brands Available' },
+        { num: '99%', label: 'Customer Rating' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600&q=80', label: 'Luxury Sedan' },
+        { img: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=600&q=80', label: 'SUV Collection' },
+        { img: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=600&q=80', label: 'Sports Cars' },
+        { img: 'https://images.unsplash.com/photo-1619682817481-e994891cd1f5?w=600&q=80', label: 'Trucks & Vans' }
+      ],
+      testimonials: [
+        { name: 'Ahmed S.', role: 'Car Buyer', quote: `Got my dream car from ${bizName} at an amazing price. The process was smooth and transparent.` },
+        { name: 'Blessing I.', role: 'First-time Buyer', quote: 'The team helped me choose the perfect car within my budget. Excellent customer service!' },
+        { name: 'Michael T.', role: 'Repeat Customer', quote: `I've bought 3 cars from ${bizName} now. They always have the best deals and the most professional service.` }
+      ],
+      ctaText: 'Find Your Perfect Ride Today'
+    },
+    'restaurant': {
+      heroImg: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80',
+      tagline: `Taste the Difference at ${bizName}`,
+      aboutText: `${bizName} brings you an extraordinary culinary experience with fresh ingredients, authentic recipes, and a warm atmosphere. From local favorites to international cuisines, every dish is crafted with passion.`,
+      accent: '#E67E22', accentGradient: 'linear-gradient(135deg,#E67E22,#D35400)',
+      services: [
+        { icon: '🍽️', title: 'Dine-In', desc: 'Elegant dining experience with indoor and outdoor seating.' },
+        { icon: '🥡', title: 'Takeaway', desc: 'Freshly prepared meals ready for quick pickup.' },
+        { icon: '🚗', title: 'Home Delivery', desc: 'Fast delivery right to your doorstep via WhatsApp or phone.' },
+        { icon: '🎉', title: 'Private Events', desc: 'Book our space for birthday parties, reunions, and celebrations.' },
+        { icon: '👨‍🍳', title: 'Catering', desc: 'Professional catering services for events of any size.' },
+        { icon: '🧁', title: 'Special Menu', desc: 'Seasonal specials and custom menus for dietary preferences.' }
+      ],
+      stats: [
+        { num: '50+', label: 'Menu Items' },
+        { num: '4.8', label: 'Average Rating' },
+        { num: '500+', label: 'Daily Orders' },
+        { num: '10+', label: 'Years Serving' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80', label: 'Signature Dish' },
+        { img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80', label: 'Fresh Pizza' },
+        { img: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&q=80', label: 'Grilled Special' },
+        { img: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600&q=80', label: 'Desserts' }
+      ],
+      testimonials: [
+        { name: 'Ngozi A.', role: 'Regular Customer', quote: `The food at ${bizName} is absolutely amazing! Best jollof rice in town. We eat here every weekend.` },
+        { name: 'Kevin R.', role: 'Food Blogger', quote: 'One of the best dining experiences I\'ve had. The flavors are authentic and the presentation is beautiful.' },
+        { name: 'Aisha M.', role: 'Event Host', quote: `${bizName} catered our family reunion and everyone loved the food. Professional service and delicious meals.` }
+      ],
+      ctaText: 'Reserve Your Table Now'
+    },
+    'lounge & bar': {
+      heroImg: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1200&q=80',
+      tagline: `Unwind at ${bizName}`,
+      aboutText: `${bizName} is the ultimate destination for nightlife, cocktails, and good vibes. With a carefully curated drinks menu, live entertainment, and a vibrant atmosphere, every night is a celebration.`,
+      accent: '#9B59B6', accentGradient: 'linear-gradient(135deg,#9B59B6,#8E44AD)',
+      services: [
+        { icon: '🍸', title: 'Premium Cocktails', desc: 'Handcrafted cocktails by our expert mixologists.' },
+        { icon: '🎵', title: 'Live Music', desc: 'Live performances and DJ nights every weekend.' },
+        { icon: '🪝', title: 'VIP Section', desc: 'Exclusive VIP tables and bottle service for special occasions.' },
+        { icon: '🍖', title: 'Gastropub Menu', desc: 'Delicious bar food and appetizers to complement your drinks.' },
+        { icon: '🎉', title: 'Private Parties', desc: 'Book the lounge for birthdays, reunions, and corporate events.' },
+        { icon: '📺', title: 'Sports Viewing', desc: 'Big screens for live match viewing with friends.' }
+      ],
+      stats: [
+        { num: '100+', label: 'Drink Options' },
+        { num: '5K+', label: 'Monthly Guests' },
+        { num: '5', label: 'Nights per Week' },
+        { num: '4.9', label: 'Guest Rating' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=600&q=80', label: 'Bar Setup' },
+        { img: 'https://images.unsplash.com/photo-1514362545857-3bc16c7d44a3?w=600&q=80', label: 'Cocktail Specials' },
+        { img: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80', label: 'Live Night' },
+        { img: 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=600&q=80', label: 'VIP Lounge' }
+      ],
+      testimonials: [
+        { name: 'Tunde K.', role: 'Regular Patron', quote: `${bizName} is my go-to spot every Friday. The music, the drinks, the vibe — everything is perfect.` },
+        { name: 'Nneka E.', role: 'Birthday Host', quote: 'Hosted my 30th birthday here and it was epic! The team made sure everything was perfect.' },
+        { name: 'Sam O.', role: 'Sports Fan', quote: 'Best place to watch matches with friends. Great atmosphere and cold drinks. Always a good time.' }
+      ],
+      ctaText: 'Join Us Tonight'
+    },
+    'health & medical': {
+      heroImg: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=1200&q=80',
+      tagline: `Your Health, Our Priority at ${bizName}`,
+      aboutText: `${bizName} provides compassionate, professional healthcare services with state-of-the-art equipment and experienced medical professionals. Your well-being is at the heart of everything we do.`,
+      accent: '#27AE60', accentGradient: 'linear-gradient(135deg,#27AE60,#1E8449)',
+      services: [
+        { icon: '🩺', title: 'General Consultation', desc: 'Comprehensive health assessments and personalized treatment plans.' },
+        { icon: '💉', title: 'Vaccinations', desc: 'Full range of immunizations for children and adults.' },
+        { icon: '🔬', title: 'Laboratory Services', desc: 'Advanced diagnostic testing with quick and accurate results.' },
+        { icon: '🦷', title: 'Dental Care', desc: 'Complete dental services from cleaning to advanced procedures.' },
+        { icon: '👁️', title: 'Eye Care', desc: 'Professional eye examinations and vision correction services.' },
+        { icon: '💊', title: 'Pharmacy', desc: 'In-house pharmacy with genuine medications at fair prices.' }
+      ],
+      stats: [
+        { num: '10K+', label: 'Patients Served' },
+        { num: '15+', label: 'Doctors' },
+        { num: '4.9', label: 'Patient Rating' },
+        { num: '24/7', label: 'Emergency Service' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&q=80', label: 'Modern Facility' },
+        { img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80', label: 'Expert Doctors' },
+        { img: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&q=80', label: 'Advanced Equipment' },
+        { img: 'https://images.unsplash.com/photo-1551190822-a9ce113ac100?w=600&q=80', label: 'Patient Care' }
+      ],
+      testimonials: [
+        { name: 'Patience O.', role: 'Patient', quote: `The doctors at ${bizName} are very professional and caring. They took time to explain my condition and treatment options.` },
+        { name: 'George N.', role: 'Parent', quote: 'I bring my children here for checkups. The staff is friendly and the facility is always clean. Highly recommended.' },
+        { name: 'Blessing I.', role: 'Patient', quote: `${bizName} saved my life with their quick emergency response. I\'m forever grateful for their excellent care.` }
+      ],
+      ctaText: 'Book Your Appointment Today'
+    },
+    'legal services': {
+      heroImg: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80',
+      tagline: `Expert Legal Solutions from ${bizName}`,
+      aboutText: `${bizName} provides trusted legal services with a team of experienced lawyers specializing in corporate, civil, and family law. We protect your rights and interests with integrity and professionalism.`,
+      accent: '#1A5276', accentGradient: 'linear-gradient(135deg,#1A5276,#154360)',
+      services: [
+        { icon: '⚖️', title: 'Corporate Law', desc: 'Business formation, contracts, mergers, and regulatory compliance.' },
+        { icon: '🏠', title: 'Real Estate Law', desc: 'Property transactions, tenancy agreements, and land disputes.' },
+        { icon: '👨‍👩‍👧', title: 'Family Law', desc: 'Divorce, custody, adoption, and family dispute resolution.' },
+        { icon: '📋', title: 'Legal Documentation', desc: 'Wills, power of attorney, and legal advisory services.' },
+        { icon: '🏛️', title: 'Litigation', desc: 'Aggressive representation in civil and criminal courts.' },
+        { icon: '🤝', title: 'Mediation', desc: 'Alternative dispute resolution to save time and costs.' }
+      ],
+      stats: [
+        { num: '500+', label: 'Cases Won' },
+        { num: '20+', label: 'Years Experience' },
+        { num: '98%', label: 'Success Rate' },
+        { num: '24/7', label: 'Legal Support' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80', label: 'Our Office' },
+        { img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600&q=80', label: 'Legal Team' },
+        { img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80', label: 'Client Meeting' },
+        { img: 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=600&q=80', label: 'Court Representation' }
+      ],
+      testimonials: [
+        { name: 'Emeka A.', role: 'Business Owner', quote: `${bizName} handled our company registration and contracts perfectly. Very professional and thorough.` },
+        { name: 'Chioma N.', role: 'Client', quote: 'They won my property case after 2 years of struggle. The team is dedicated and really knows the law.' },
+        { name: 'Ibrahim K.', role: 'Corporate Client', quote: `Outstanding legal service. ${bizName} has been our company's legal partner for over 5 years now.` }
+      ],
+      ctaText: 'Get a Free Legal Consultation'
+    },
+    'education': {
+      heroImg: 'https://images.unsplash.com/photo-1523050854058-8df90110c476?w=1200&q=80',
+      tagline: `Shape the Future at ${bizName}`,
+      aboutText: `${bizName} is committed to providing quality education that empowers students to achieve their full potential. With experienced educators and modern facilities, we create an environment where learning thrives.`,
+      accent: '#2980B9', accentGradient: 'linear-gradient(135deg,#2980B9,#1F618D)',
+      services: [
+        { icon: '📚', title: 'Academic Programs', desc: 'Comprehensive curriculum from primary to tertiary education levels.' },
+        { icon: '💻', title: 'Digital Learning', desc: 'Modern computer labs and e-learning platforms for tech-savvy education.' },
+        { icon: '🎨', title: 'Extra-Curricular', desc: 'Sports, arts, music, and clubs for holistic child development.' },
+        { icon: '📝', title: 'Exam Preparation', desc: 'Special coaching for WAEC, NECO, JAMB, and international exams.' },
+        { icon: '👩‍🏫', title: 'Qualified Teachers', desc: 'Experienced and certified educators passionate about teaching.' },
+        { icon: '🏫', title: 'Modern Facilities', desc: 'Well-equipped classrooms, labs, library, and sports facilities.' }
+      ],
+      stats: [
+        { num: '2000+', label: 'Students' },
+        { num: '100+', label: 'Teachers' },
+        { num: '95%', label: 'Pass Rate' },
+        { num: '15+', label: 'Years Running' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&q=80', label: 'Campus' },
+        { img: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80', label: 'Classroom' },
+        { img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80', label: 'Science Lab' },
+        { img: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=600&q=80', label: 'Library' }
+      ],
+      testimonials: [
+        { name: 'Mrs. Okafor', role: 'Parent', quote: `My children have improved tremendously since joining ${bizName}. The teachers are dedicated and the environment is excellent.` },
+        { name: 'David E.', role: 'Student', quote: 'The digital learning facilities at ${bizName} are top-notch. I\'ve learned more here than anywhere else.' },
+        { name: 'Dr. Chukwu', role: 'School Board', quote: `${bizName} consistently produces excellent results. We\'re proud of our academic achievements.` }
+      ],
+      ctaText: 'Enroll Your Child Today'
+    },
+    'technology': {
+      heroImg: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80',
+      tagline: `Innovate with ${bizName}`,
+      aboutText: `${bizName} delivers cutting-edge technology solutions that transform businesses. From software development to IT consulting, we help organizations leverage technology for growth and efficiency.`,
+      accent: '#3498DB', accentGradient: 'linear-gradient(135deg,#3498DB,#2980B9)',
+      services: [
+        { icon: '💻', title: 'Software Development', desc: 'Custom software, web apps, and mobile applications built to specification.' },
+        { icon: '☁️', title: 'Cloud Solutions', desc: 'Cloud migration, hosting, and management on AWS, Azure, and GCP.' },
+        { icon: '🔒', title: 'Cybersecurity', desc: 'Protect your business with advanced security audits and implementations.' },
+        { icon: '📊', title: 'Data Analytics', desc: 'Transform raw data into actionable business intelligence.' },
+        { icon: '🌐', title: 'Web Design', desc: 'Beautiful, responsive websites that convert visitors to customers.' },
+        { icon: '🛠️', title: 'IT Support', desc: '24/7 technical support and managed IT services for businesses.' }
+      ],
+      stats: [
+        { num: '200+', label: 'Projects Delivered' },
+        { num: '50+', label: 'Enterprise Clients' },
+        { num: '99.9%', label: 'Uptime SLA' },
+        { num: '24/7', label: 'Support Available' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80', label: 'Tech Solutions' },
+        { img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80', label: 'Analytics' },
+        { img: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80', label: 'Cloud Infrastructure' },
+        { img: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&q=80', label: 'Development' }
+      ],
+      testimonials: [
+        { name: 'Patrick I.', role: 'CTO, FinTech Co.', quote: `${bizName} built our mobile app from scratch. The quality and speed of delivery exceeded our expectations.` },
+        { name: 'Sandra M.', role: 'CEO, E-commerce', quote: 'Their cloud migration saved us 40% on infrastructure costs. Highly skilled team with excellent communication.' },
+        { name: 'Emmanuel O.', role: 'Startup Founder', quote: `Working with ${bizName} was a game-changer for our startup. They understood our vision and delivered perfectly.` }
+      ],
+      ctaText: 'Start Your Digital Transformation'
+    },
+    'retail & fashion': {
+      heroImg: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80',
+      tagline: `Define Your Style with ${bizName}`,
+      aboutText: `${bizName} offers the latest fashion trends and quality products for the style-conscious customer. With a carefully curated collection and exceptional customer service, we help you look and feel your best.`,
+      accent: '#E91E63', accentGradient: 'linear-gradient(135deg,#E91E63,#C2185B)',
+      services: [
+        { icon: '👗', title: 'Latest Fashion', desc: 'Trendy clothing collections for men, women, and children.' },
+        { icon: '👟', title: 'Footwear', desc: 'Premium shoes and sneakers for every occasion.' },
+        { icon: '👜', title: 'Accessories', desc: 'Bags, jewelry, watches, and fashion accessories.' },
+        { icon: '✂️', title: 'Tailoring', desc: 'Custom tailoring and alteration services for perfect fit.' },
+        { icon: '🎁', title: 'Gift Shopping', desc: 'Curated gift options and gift wrapping services.' },
+        { icon: '📦', title: 'Online Shopping', desc: 'Shop from anywhere with our WhatsApp ordering service.' }
+      ],
+      stats: [
+        { num: '5000+', label: 'Products' },
+        { num: '10K+', label: 'Happy Customers' },
+        { num: '50+', label: 'Brands Stocked' },
+        { num: '4.8', label: 'Customer Rating' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80', label: 'Store Interior' },
+        { img: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=80', label: 'Fashion Collection' },
+        { img: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80', label: 'Accessories' },
+        { img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80', label: 'Shopping Experience' }
+      ],
+      testimonials: [
+        { name: 'Blessing E.', role: 'Fashion Lover', quote: `I always find the most stylish pieces at ${bizName}. Their collection is always on trend and the prices are great.` },
+        { name: 'Adaeze N.', role: 'Regular Customer', quote: 'The customer service is exceptional. They helped me pick the perfect outfit for my event. Love this store!' },
+        { name: 'Funke O.', role: 'Online Shopper', quote: `Ordering via WhatsApp is so convenient. My package arrived on time and the quality was exactly as shown. ${bizName} is the best!` }
+      ],
+      ctaText: 'Shop the Latest Collection'
+    },
+    'beauty & wellness': {
+      heroImg: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80',
+      tagline: `Glow Up at ${bizName}`,
+      aboutText: `${bizName} is your destination for beauty and wellness. Our expert stylists and therapists provide premium services in a relaxing environment, helping you look and feel your absolute best.`,
+      accent: '#F39C12', accentGradient: 'linear-gradient(135deg,#F39C12,#E67E22)',
+      services: [
+        { icon: '💇', title: 'Hair Styling', desc: 'Professional cuts, colors, treatments, and styling for all hair types.' },
+        { icon: '💅', title: 'Nail Art', desc: 'Manicures, pedicures, gel nails, and creative nail designs.' },
+        { icon: '💆', title: 'Facials & Skincare', desc: 'Rejuvenating facials and skincare treatments for glowing skin.' },
+        { icon: '🧴', title: 'Body Treatments', desc: 'Massages, body scrubs, and relaxation therapies.' },
+        { icon: '💄', title: 'Makeup Artistry', desc: 'Bridal, party, and editorial makeup by skilled artists.' },
+        { icon: '🧖', title: 'Spa Services', desc: 'Full spa experience with steam, sauna, and wellness packages.' }
+      ],
+      stats: [
+        { num: '5000+', label: 'Clients Served' },
+        { num: '20+', label: 'Expert Stylists' },
+        { num: '4.9', label: 'Client Rating' },
+        { num: '10+', label: 'Years Experience' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80', label: 'Salon Interior' },
+        { img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80', label: 'Hair Styling' },
+        { img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80', label: 'Nail Art' },
+        { img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80', label: 'Skincare' }
+      ],
+      testimonials: [
+        { name: 'Amara C.', role: 'Regular Client', quote: `${bizName} is the only place I trust with my hair. The stylists are amazing and always deliver exactly what I want.` },
+        { name: 'Nneka A.', role: 'Bride', quote: 'My bridal makeup was absolutely stunning. Everyone at my wedding complimented how beautiful I looked. Thank you ${bizName}!' },
+        { name: 'Grace O.', role: 'Spa Client', quote: 'The spa experience at ${bizName} is heavenly. I always leave feeling refreshed and rejuvenated.' }
+      ],
+      ctaText: 'Book Your Beauty Session'
+    },
+    'construction': {
+      heroImg: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80',
+      tagline: `Building Excellence with ${bizName}`,
+      aboutText: `${bizName} is a leading construction company delivering high-quality building projects. From residential homes to commercial complexes, we build structures that stand the test of time.`,
+      accent: '#D35400', accentGradient: 'linear-gradient(135deg,#D35400,#A04000)',
+      services: [
+        { icon: '🏗️', title: 'Building Construction', desc: 'Complete residential and commercial building construction services.' },
+        { icon: '🔨', title: 'Renovation', desc: 'Transform existing spaces with modern renovation and remodeling.' },
+        { icon: '📐', title: 'Architecture', desc: 'Professional architectural design and planning services.' },
+        { icon: '🔌', title: 'Electrical Work', desc: 'Safe and compliant electrical installations and repairs.' },
+        { icon: '🚿', title: 'Plumbing', desc: 'Expert plumbing services for new builds and maintenance.' },
+        { icon: '🏠', title: 'Interior Design', desc: 'Beautiful interior finishing and decoration services.' }
+      ],
+      stats: [
+        { num: '200+', label: 'Projects Completed' },
+        { num: '15+', label: 'Years Experience' },
+        { num: '50+', label: 'Expert Workers' },
+        { num: '100%', label: 'Quality Guarantee' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80', label: 'Building Project' },
+        { img: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&q=80', label: 'Site Work' },
+        { img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80', label: 'Completed Home' },
+        { img: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80', label: 'Modern Design' }
+      ],
+      testimonials: [
+        { name: 'Chief Obi', role: 'Homeowner', quote: `${bizName} built our dream home from scratch. The quality of work and attention to detail is exceptional.` },
+        { name: 'Engr. Emeka', role: 'Developer', quote: 'I\'ve worked with ${bizName} on multiple projects. They always deliver on time and within budget. Highly recommended.' },
+        { name: 'Mrs. Adekunle', role: 'Client', quote: `The renovation of our office was done beautifully. ${bizName} transformed our space completely. Great work!` }
+      ],
+      ctaText: 'Get a Free Project Quote'
+    },
+    'logistics': {
+      heroImg: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&q=80',
+      tagline: `Moving Your Business Forward with ${bizName}`,
+      aboutText: `${bizName} provides reliable logistics and delivery solutions for businesses and individuals. With a fleet of vehicles and a dedicated team, we ensure your shipments arrive safely and on time.`,
+      accent: '#F39C12', accentGradient: 'linear-gradient(135deg,#F39C12,#D68910)',
+      services: [
+        { icon: '🚚', title: 'Delivery Services', desc: 'Fast and reliable same-day and next-day delivery across the country.' },
+        { icon: '📦', title: 'Warehousing', desc: 'Secure warehousing and inventory management solutions.' },
+        { icon: '🌐', title: 'International Shipping', desc: 'Global freight forwarding and customs clearance services.' },
+        { icon: '🚛', title: 'Heavy Haulage', desc: 'Transportation of heavy equipment and oversized cargo.' },
+        { icon: '📋', title: 'Supply Chain', desc: 'End-to-end supply chain management and optimization.' },
+        { icon: '📱', title: 'Track & Trace', desc: 'Real-time tracking and delivery notifications for all shipments.' }
+      ],
+      stats: [
+        { num: '10K+', label: 'Deliveries/Month' },
+        { num: '100+', label: 'Vehicles' },
+        { num: '99%', label: 'On-Time Rate' },
+        { num: '24/7', label: 'Operations' }
+      ],
+      gallery: [
+        { img: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80', label: 'Fleet' },
+        { img: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=600&q=80', label: 'Warehouse' },
+        { img: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80', label: 'Delivery Van' },
+        { img: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5eb19?w=600&q=80', label: 'Tracking' }
+      ],
+      testimonials: [
+        { name: 'Oluwaseun A.', role: 'E-commerce Owner', quote: `${bizName} handles all our deliveries efficiently. Their tracking system gives us and our customers peace of mind.` },
+        { name: 'Chinedu O.', role: 'Manufacturer', quote: 'Reliable logistics partner for over 3 years. They understand our supply chain needs perfectly.' },
+        { name: 'Amina B.', role: 'Small Business', quote: `Fast delivery and great customer service. ${bizName} has helped my business grow with reliable logistics.` }
+      ],
+      ctaText: 'Schedule a Pickup Today'
+    }
+  };
+
+  // Default fallback for unknown industries
+  const defaults = {
+    heroImg: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80',
+    tagline: `Welcome to ${bizName}`,
+    aboutText: `${bizName} is dedicated to providing exceptional service to our customers. With a focus on quality, reliability, and customer satisfaction, we strive to exceed expectations in everything we do.`,
+    accent: '#10B981', accentGradient: 'linear-gradient(135deg,#10B981,#059669)',
+    services: [
+      { icon: '⭐', title: 'Quality Service', desc: 'Delivering premium quality in every aspect of our work with attention to detail.' },
+      { icon: '🤝', title: 'Customer Focus', desc: 'Your satisfaction is our priority. We listen, understand, and deliver.' },
+      { icon: '🏆', title: 'Excellence', desc: 'Committed to the highest standards of professional service.' },
+      { icon: '💡', title: 'Innovation', desc: 'Modern solutions and approaches to meet evolving customer needs.' },
+      { icon: '📋', title: 'Consultation', desc: 'Expert advice and personalized solutions for your specific requirements.' },
+      { icon: '🛡️', title: 'Reliability', desc: 'Consistent, dependable service you can count on every time.' }
+    ],
+    stats: [
+      { num: '500+', label: 'Happy Clients' },
+      { num: '10+', label: 'Years Experience' },
+      { num: '4.9', label: 'Customer Rating' },
+      { num: '24/7', label: 'Support' }
+    ],
+    gallery: [
+      { img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80', label: 'Our Office' },
+      { img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80', label: 'Team Work' },
+      { img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80', label: 'Collaboration' },
+      { img: 'https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=600&q=80', label: 'Our Space' }
+    ],
+    testimonials: [
+      { name: 'Client A', role: 'Valued Customer', quote: `${bizName} provides outstanding service. I highly recommend them to anyone looking for quality and reliability.` },
+      { name: 'Client B', role: 'Business Partner', quote: 'Professional, responsive, and dedicated. Working with ${bizName} has been a great experience.' },
+      { name: 'Client C', role: 'Satisfied Customer', quote: `Excellent experience with ${bizName}. They truly care about their customers and it shows in their work.` }
+    ],
+    ctaText: `Get in Touch with ${bizName}`
+  };
+
+  return map[industry] || defaults;
+}
+
+// ============================================================
+// AUTO-GENERATE DEMO WEBSITE
+// ============================================================
+function generateDemoWebsite(bizName, websiteData, googleData, socialData, industry) {
+  const phone = websiteData?.phone || googleData?.phone || '';
+  const email = websiteData?.email || '';
+  const address = websiteData?.address || googleData?.address || '';
+  const waNumber = websiteData?.whatsappNumber || phone.replace(/[^0-9]/g, '');
+  const services = websiteData?.services || '';
+  const description = websiteData?.businessDesc || websiteData?.description || '';
+  const fbUrl = socialData?.facebook || '';
+  const igUrl = socialData?.instagram || '';
+  const mapsUrl = googleData?.mapsUrl || '';
+  const rating = googleData?.rating || '';
+  const reviewCount = googleData?.reviewCount || '';
+  const ind = (industry || '').toLowerCase();
+
+  const waLink = waNumber ? `https://wa.me/${waNumber.replace(/[^0-9]/g, '').replace(/^0/, '234')}?text=Hello%20${encodeURIComponent(bizName)},%20I%27m%20interested%20in%20your%20services` : '#';
+  const telLink = phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : '#';
+  const igClean = igUrl ? igUrl.replace(/\/+$/, '') : '';
+  const fbClean = fbUrl ? fbUrl.replace(/\/+$/, '') : '';
+
+  // Industry-specific content
+  const industryData = getIndustryContent(ind, bizName, services);
+  const heroImg = industryData.heroImg;
+  const tagline = industryData.tagline;
+  const aboutText = industryData.aboutText;
+  const serviceCards = industryData.services;
+  const statItems = industryData.stats;
+  const galleryItems = industryData.gallery;
+  const testimonialItems = industryData.testimonials;
+  const ctaText = industryData.ctaText;
+  const accentColor = industryData.accent;
+  const accentGradient = industryData.accentGradient;
+
+  const mapsEmbed = mapsUrl && mapsUrl.includes('google')
+    ? `<iframe src="${mapsUrl}" width="100%" height="350" style="border:0;border-radius:16px" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
+    : '';
+
+  const demoHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${bizName} — Professional Website Concept</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--primary:#0B1D3A;--accent:${accentColor};--accent-gradient:${accentGradient};--light:#f8fafc;--border:#e2e8f0;--text:#1a1a2e;--muted:#64748b;--radius:16px}
+body{font-family:'Plus Jakarta Sans','Manrope',sans-serif;color:var(--text);background:#fff;line-height:1.7;overflow-x:hidden}
+img{max-width:100%;display:block}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;transition:all .3s}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
+.nav-logo{font-size:22px;font-weight:800;color:var(--primary);text-decoration:none}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{text-decoration:none;color:var(--muted);font-weight:600;font-size:14px;transition:color .2s}
+.nav-links a:hover{color:var(--accent)}
+.nav-cta{background:var(--accent);color:#fff!important;padding:10px 24px;border-radius:30px;font-weight:700!important;transition:transform .2s,box-shadow .2s}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:120px 24px 80px;background:var(--primary)}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(11,29,58,.92),rgba(11,29,58,.7)),url('${heroImg}') center/cover no-repeat}
+.hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero-text{color:#fff}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:8px 20px;border-radius:30px;font-size:13px;font-weight:600;margin-bottom:24px;backdrop-filter:blur(10px)}
+.hero h1{font-size:clamp(36px,5vw,60px);font-weight:800;line-height:1.1;margin-bottom:20px}
+.hero h1 .highlight{background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:18px;color:rgba(255,255,255,.75);max-width:520px;margin-bottom:36px;line-height:1.8}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#fff;padding:16px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;display:inline-flex;align-items:center;gap:10px;transition:all .3s;border:2px solid var(--accent)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
+.btn-outline{background:transparent;color:#fff;padding:16px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;border:2px solid rgba(255,255,255,.3);display:inline-flex;align-items:center;gap:10px;transition:all .3s}
+.btn-outline:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.5)}
+.hero-visual{position:relative}
+.hero-card{background:rgba(255,255,255,.08);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:40px;color:#fff;text-align:center}
+.hero-card .rating{font-size:48px;font-weight:800;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-card .stars{color:#fbbf24;font-size:24px;margin:8px 0}
+.hero-card .review-text{font-size:14px;color:rgba(255,255,255,.6)}
+.hero-card .verified{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;color:#10b981;margin-top:16px}
+
+/* STATS */
+.stats-bar{background:var(--light);padding:48px 24px;border-bottom:1px solid var(--border)}
+.stats-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
+.stat-item .stat-number{font-size:36px;font-weight:800;color:var(--accent)}
+.stat-item .stat-label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+/* SECTIONS */
+.section{padding:100px 24px}
+.section-dark{background:var(--primary);color:#fff}
+.section-alt{background:var(--light)}
+.section-header{text-align:center;max-width:700px;margin:0 auto 64px}
+.section-header .overline{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:12px}
+.section-header h2{font-size:clamp(28px,4vw,44px);font-weight:800;color:var(--primary);line-height:1.2;margin-bottom:16px}
+.section-dark .section-header h2{color:#fff}
+.section-header p{font-size:17px;color:var(--muted);line-height:1.8}
+
+/* SERVICE CARDS */
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1200px;margin:0 auto}
+.service-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:36px;transition:all .4s;position:relative;overflow:hidden}
+.service-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent-gradient);transform:scaleX(0);transition:transform .4s}
+.service-card:hover::before{transform:scaleX(1)}
+.service-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(0,0,0,.08);border-color:transparent}
+.service-card .icon-wrap{width:56px;height:56px;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.04));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px}
+.service-card h3{font-size:20px;font-weight:700;color:var(--primary);margin-bottom:10px}
+.service-card p{font-size:15px;color:var(--muted);line-height:1.7}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;max-width:1200px;margin:0 auto}
+.about-img{border-radius:24px;overflow:hidden;position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,var(--primary),#1a4a8a)}
+.about-img img{width:100%;height:100%;object-fit:cover}
+.about-text h2{font-size:36px;font-weight:800;margin-bottom:20px;line-height:1.2}
+.about-text p{font-size:16px;color:var(--muted);margin-bottom:16px;line-height:1.8}
+.about-checks{list-style:none;margin-top:24px}
+.about-checks li{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:15px;font-weight:500}
+.about-checks li::before{content:'✓';width:28px;height:28px;background:rgba(16,185,129,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;font-size:14px;flex-shrink:0}
+
+/* GALLERY */
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:1200px;margin:0 auto}
+.gallery-item{border-radius:var(--radius);overflow:hidden;position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#0B1D3A,#1a4a8a)}
+.gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.gallery-item:hover img{transform:scale(1.08)}
+.gallery-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(11,29,58,.8),transparent);display:flex;align-items:flex-end;padding:24px;opacity:0;transition:opacity .3s}
+.gallery-item:hover .gallery-overlay{opacity:1}
+.gallery-overlay span{color:#fff;font-weight:700;font-size:16px}
+
+/* TESTIMONIALS */
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px;max-width:1200px;margin:0 auto}
+.testimonial-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:36px;backdrop-filter:blur(10px)}
+.testimonial-card .stars{color:#fbbf24;font-size:18px;margin-bottom:16px}
+.testimonial-card .quote{font-size:16px;line-height:1.8;color:rgba(255,255,255,.8);margin-bottom:20px;font-style:italic}
+.testimonial-card .author{display:flex;align-items:center;gap:12px}
+.testimonial-card .avatar{width:44px;height:44px;border-radius:50%;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+.testimonial-card .name{font-weight:700;font-size:15px}
+.testimonial-card .role{font-size:13px;color:rgba(255,255,255,.5)}
+
+/* CTA */
+.cta-section{padding:100px 24px;background:var(--accent-gradient);text-align:center;color:#fff;position:relative;overflow:hidden}
+.cta-section::before{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;background:rgba(255,255,255,.05);border-radius:50%}
+.cta-section::after{content:'';position:absolute;bottom:-30%;left:-10%;width:400px;height:400px;background:rgba(255,255,255,.05);border-radius:50%}
+.cta-content{position:relative;z-index:2;max-width:700px;margin:0 auto}
+.cta-content h2{font-size:clamp(28px,4vw,44px);font-weight:800;margin-bottom:16px}
+.cta-content p{font-size:18px;opacity:.85;margin-bottom:36px;line-height:1.7}
+.cta-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-white{background:#fff;color:var(--primary);padding:16px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;display:inline-flex;align-items:center;gap:10px;transition:all .3s;border:2px solid #fff}
+.btn-white:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
+.btn-ghost{background:transparent;color:#fff;padding:16px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;border:2px solid rgba(255,255,255,.4);display:inline-flex;align-items:center;gap:10px;transition:all .3s}
+.btn-ghost:hover{background:rgba(255,255,255,.15);border-color:#fff}
+
+/* CONTACT */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1000px;margin:0 auto}
+.contact-cards{display:flex;flex-direction:column;gap:16px}
+.contact-card{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;transition:all .3s;text-decoration:none;color:inherit}
+.contact-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.06);transform:translateY(-2px)}
+.contact-card .cc-icon{width:48px;height:48px;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(16,185,129,.04));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.contact-card .cc-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.contact-card .cc-value{font-weight:700;font-size:15px;color:var(--primary);margin-top:2px}
+
+/* MAP */
+.map-wrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:var(--light)}
+
+/* FOOTER */
+footer{background:var(--primary);color:rgba(255,255,255,.5);padding:32px 24px;text-align:center;font-size:13px}
+footer a{color:var(--accent);text-decoration:none}
+.footer-links{display:flex;justify-content:center;gap:24px;margin-bottom:12px;flex-wrap:wrap}
+.footer-links a{color:rgba(255,255,255,.6);text-decoration:none;font-weight:500;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+
+/* BADGE */
+.badge{position:fixed;bottom:20px;right:20px;background:var(--primary);color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:700;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px}
+.badge span{color:var(--accent)}
+
+/* WHATSAPP FLOAT */
+.wa-float{position:fixed;bottom:80px;left:20px;z-index:999;background:#25D366;color:#fff;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;text-decoration:none;box-shadow:0 6px 20px rgba(37,211,102,.4);transition:transform .3s}
+.wa-float:hover{transform:scale(1.1)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .hero-content{grid-template-columns:1fr;text-align:center}
+  .hero p{margin-left:auto;margin-right:auto}
+  .hero-btns{justify-content:center}
+  .hero-visual{display:none}
+  .stats-inner{grid-template-columns:repeat(2,1fr)}
+  .about-grid{grid-template-columns:1fr}
+  .contact-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+}
+@media(max-width:640px){
+  .hero{padding:100px 16px 60px}
+  .section{padding:60px 16px}
+  .services-grid{grid-template-columns:1fr}
+  .testimonials-grid{grid-template-columns:1fr}
+  .gallery-grid{grid-template-columns:1fr}
+  .cta-section{padding:60px 16px}
+  .stats-inner{grid-template-columns:1fr 1fr;gap:20px}
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.hero-text,.hero-card{animation:fadeUp .8s ease-out both}
+.hero-card{animation-delay:.2s}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">${bizName.split(' ')[0]}<span>.</span></a>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#services">Services</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#testimonials">Reviews</a>
+      <a href="#contact">Contact</a>
+      ${waNumber ? `<a href="${waLink}" class="nav-cta" target="_blank">Get a Quote</a>` : ''}
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-text">
+      <div class="hero-badge">⭐ Trusted by ${reviewCount || '100+'} Happy Customers</div>
+      <h1>${tagline.split(' ').map((w,i) => i === Math.floor(tagline.split(' ').length/2) ? `<span class="highlight">${w}</span>` : w).join(' ')}</h1>
+      <p>${aboutText}</p>
+      <div class="hero-btns">
+        ${waNumber ? `<a href="${waLink}" class="btn-primary" target="_blank">💬 WhatsApp Us</a>` : ''}
+        ${phone ? `<a href="${telLink}" class="btn-outline">📞 Call ${phone}</a>` : ''}
+        <a href="#services" class="btn-outline" style="border-color:rgba(255,255,255,.2)">Explore Services ↓</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="rating">${rating || '4.8'}</div>
+        <div class="stars">★★★★★</div>
+        <div class="review-text">${reviewCount || '100+'} verified reviews</div>
+        <div class="verified">✓ Google Verified Business</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    ${statItems.map(s => `<div class="stat-item"><div class="stat-number">${s.num}</div><div class="stat-label">${s.label}</div></div>`).join('')}
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" class="section">
+  <div class="about-grid">
+    <div class="about-img">
+      <img src="${heroImg}" alt="${bizName}" onerror="this.style.display='none'">
+    </div>
+    <div class="about-text">
+      <div class="section-header" style="text-align:left;margin:0">
+        <div class="overline">About Us</div>
+        <h2>We Are ${bizName}</h2>
+      </div>
+      <p>${aboutText}</p>
+      <p>With years of experience serving the community, we pride ourselves on delivering exceptional results that exceed expectations. Our team is dedicated to providing personalized service tailored to your specific needs.</p>
+      <ul class="about-checks">
+        <li>Professional & Licensed Team</li>
+        <li>Customer Satisfaction Guaranteed</li>
+        <li>Fast & Reliable Service</li>
+        <li>Competitive Pricing</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="section section-alt">
+  <div class="section-header">
+    <div class="overline">What We Offer</div>
+    <h2>Our Services</h2>
+    <p>Discover the range of professional services we provide to help you achieve your goals.</p>
+  </div>
+  <div class="services-grid">
+    ${serviceCards.map(s => `
+      <div class="service-card">
+        <div class="icon-wrap">${s.icon}</div>
+        <h3>${s.title}</h3>
+        <p>${s.desc}</p>
+      </div>
+    `).join('')}
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="section">
+  <div class="section-header">
+    <div class="overline">Our Work</div>
+    <h2>Gallery</h2>
+    <p>A glimpse into what we do and the quality we deliver.</p>
+  </div>
+  <div class="gallery-grid">
+    ${galleryItems.map(g => `
+      <div class="gallery-item">
+        <img src="${g.img}" alt="${g.label}" onerror="this.parentElement.style.background='linear-gradient(135deg,#0B1D3A,#1a4a8a)';this.style.display='none'">
+        <div class="gallery-overlay"><span>${g.label}</span></div>
+      </div>
+    `).join('')}
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" class="section section-dark">
+  <div class="section-header">
+    <div class="overline" style="color:var(--accent)">Testimonials</div>
+    <h2>What Our Clients Say</h2>
+    <p>Don't just take our word for it — hear from our satisfied customers.</p>
+  </div>
+  <div class="testimonials-grid">
+    ${testimonialItems.map(t => `
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <div class="quote">"${t.quote}"</div>
+        <div class="author">
+          <div class="avatar">${t.name.charAt(0)}</div>
+          <div>
+            <div class="name">${t.name}</div>
+            <div class="role">${t.role}</div>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-content">
+    <h2>${ctaText}</h2>
+    <p>Ready to experience the difference? Contact us today and let's discuss how we can help you achieve your goals.</p>
+    <div class="cta-buttons">
+      ${waNumber ? `<a href="${waLink}" class="btn-white" target="_blank">💬 Chat on WhatsApp</a>` : ''}
+      ${phone ? `<a href="${telLink}" class="btn-ghost">📞 Call Now — ${phone}</a>` : ''}
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="section section-alt">
+  <div class="section-header">
+    <div class="overline">Get in Touch</div>
+    <h2>Contact Us</h2>
+    <p>We'd love to hear from you. Reach out anytime.</p>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-cards">
+      ${phone ? `<a href="${telLink}" class="contact-card"><div class="cc-icon">📞</div><div><div class="cc-label">Phone</div><div class="cc-value">${phone}</div></div></a>` : ''}
+      ${waNumber ? `<a href="${waLink}" class="contact-card" target="_blank"><div class="cc-icon">💬</div><div><div class="cc-label">WhatsApp</div><div class="cc-value">Chat with us</div></div></a>` : ''}
+      ${email ? `<a href="mailto:${email}" class="contact-card"><div class="cc-icon">✉️</div><div><div class="cc-label">Email</div><div class="cc-value">${email}</div></div></a>` : ''}
+      ${address ? `<div class="contact-card"><div class="cc-icon">📍</div><div><div class="cc-label">Address</div><div class="cc-value">${address}</div></div></div>` : ''}
+    </div>
+    <div class="map-wrap">
+      ${mapsEmbed || `<div style="height:100%;min-height:300px;background:linear-gradient(135deg,#0B1D3A,#1a4a8a);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:14px;border-radius:16px">📍 Map placeholder</div>`}
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a href="#about">About</a>
+    <a href="#services">Services</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#testimonials">Reviews</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <p>&copy; 2026 ${bizName}. All rights reserved.</p>
+  <p style="margin-top:8px">Concept by <a href="https://jahzwin19.github.io/jfx-audit/" target="_blank">JFX Digital Global Tech</a></p>
+</footer>
+
+<!-- WHATSAPP FLOAT -->
+${waNumber ? `<a href="${waLink}" class="wa-float" target="_blank" title="Chat on WhatsApp">💬</a>` : ''}
+
+<!-- JFX BADGE -->
+<div class="badge">⚡ Concept by <span>JFX Digital</span></div>
+
+</body>
+</html>`;
+
+  // Store the demo HTML and fill the demo URL field
+  window._demoHtml = demoHtml;
+  window._demoName = bizName;
+
+  // Save demo file via server
+  const slug = bizName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const filename = slug + '.html';
+  fetch('/save-demo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename, html: demoHtml })
+  }).then(r => r.json()).then(data => {
+    if (data.ok) {
+      // Fill the demo fields with the live URL
+      const demoNameField = document.getElementById('fDemo1Name');
+      const demoUrlField = document.getElementById('fDemo1Url');
+      if (demoNameField) demoNameField.value = `${bizName} — Concept Demo`;
+      if (demoUrlField) demoUrlField.value = window.location.origin + data.path;
+    }
+  }).catch(() => {
+    // Fallback: save as blob URL
+    const blob = new Blob([demoHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const demoNameField = document.getElementById('fDemo1Name');
+    const demoUrlField = document.getElementById('fDemo1Url');
+    if (demoNameField) demoNameField.value = `${bizName} — Concept Demo`;
+    if (demoUrlField) demoUrlField.value = url;
+  });
+}
+
+// ============================================================
+// AI API CALLS
+// ============================================================
 async function callAI(prompt, apiKey) {
   if (aiProvider === 'openai') {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-      body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }], max_tokens: 2000 })
+      body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'system', content: 'You are a digital marketing audit expert for JFX Digital Global Tech. Analyze businesses and provide actionable insights. Always respond with valid JSON only.' }, { role: 'user', content: prompt }], max_tokens: 2000, temperature: 0.3 })
     });
     const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
     return data.choices?.[0]?.message?.content || '';
   }
   if (aiProvider === 'claude') {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, system: 'You are a digital marketing audit expert for JFX Digital Global Tech. Analyze businesses and provide actionable insights. Always respond with valid JSON only.', messages: [{ role: 'user', content: prompt }] })
     });
     const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
     return data.content?.[0]?.text || '';
   }
   if (aiProvider === 'gemini') {
     const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: 'You are a digital marketing audit expert for JFX Digital Global Tech. Analyze businesses and provide actionable insights. Always respond with valid JSON only.' }] }, contents: [{ parts: [{ text: prompt }] }] })
     });
     const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
   return '';
 }
 
-// Main AI Audit
+// ============================================================
+// MAIN AI AUDIT
+// ============================================================
 async function startAIAudit() {
   if (aiAnalyzing) return;
   aiAnalyzing = true;
@@ -1746,101 +2987,174 @@ async function startAIAudit() {
   const apiKey = document.getElementById('apiKeyInput').value;
   if (aiProvider !== 'free' && !apiKey) {
     showAIStatus('Please enter an API key or select Free mode.', 'error');
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Start AI Research';
-    aiAnalyzing = false;
+    resetAIButton(btn);
     return;
   }
-
   if (apiKey) localStorage.setItem('jfx-ai-key', apiKey);
 
   const bizName = document.getElementById('fBusinessName').value;
   const websiteUrl = document.getElementById('fWebsite').value;
+  const location = document.getElementById('fLocation').value;
   const fbUrl = document.getElementById('fFacebook').value;
   const igUrl = document.getElementById('fInstagram').value;
   const ttUrl = document.getElementById('fTiktok').value;
 
   if (!bizName && !websiteUrl) {
     showAIStatus('Please enter at least a business name or website URL.', 'error');
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Start AI Research';
-    aiAnalyzing = false;
+    resetAIButton(btn);
     return;
   }
 
-  showAIStatus('Starting research...', 'loading');
-  showAIProgress(10, 'Fetching website...');
-
-  // 1. Fetch website
   let websiteData = null;
-  if (websiteUrl) {
-    showAIProgress(20, 'Analyzing website...');
-    const html = await fetchPage(websiteUrl);
-    websiteData = extractMeta(html);
-    showAIProgress(35, 'Website analyzed.');
-  }
-
-  // 2. Research Google
-  showAIProgress(45, 'Researching Google presence...');
   let googleData = null;
-  if (bizName) {
-    // Simulate Google research
-    googleData = { hasPhotos: false, hasReviews: false };
-    if (websiteData) {
-      googleData.hasPhotos = websiteData.hasImages > 0;
-    }
-  }
-
-  // 3. Check social profiles
-  showAIProgress(60, 'Checking social media...');
   let socialData = {};
-  if (fbUrl || igUrl || ttUrl) {
-    socialData = {
-      facebook: fbUrl || null,
-      instagram: igUrl || null,
-      tiktok: ttUrl || null
-    };
-  } else if (websiteData) {
-    socialData = checkSocialProfiles(websiteData.htmlSnippet);
-  }
 
-  // 4. Fill form
-  showAIProgress(75, 'Analyzing findings...');
-  const scores = analyzeAndFill(websiteData, googleData, socialData, bizName);
-
-  // 5. Optional AI enhancement
-  if (aiProvider !== 'free' && apiKey) {
-    showAIProgress(85, 'Running AI deep analysis...');
-    try {
-      const prompt = `Analyze this business for a digital audit. Business: ${bizName || 'Unknown'}. Website: ${websiteUrl || 'None'}. 
-Website data: ${JSON.stringify(websiteData)}. 
-Social: Facebook=${socialData.facebook||'none'}, Instagram=${socialData.instagram||'none'}, TikTok=${socialData.tiktok||'none'}.
-Provide a brief JSON analysis with: { "overallScore": 0-100, "googleScore": 0-20, "websiteScore": 0-20, "socialScore": 0-20, "funnelScore": 0-20, "adScore": 0-20, "topIssues": ["issue1","issue2","issue3"], "recommendations": ["rec1","rec2","rec3","rec4","rec5"] }`;
-      const aiResult = await callAI(prompt, apiKey);
-      try {
-        const parsed = JSON.parse(aiResult);
-        if (parsed.topIssues?.[0]) document.getElementById('fTop1Prob').value = parsed.topIssues[0];
-        if (parsed.topIssues?.[1]) document.getElementById('fTop2Prob').value = parsed.topIssues[1];
-        if (parsed.topIssues?.[2]) document.getElementById('fTop3Prob').value = parsed.topIssues[2];
-        if (parsed.recommendations?.[0]) document.getElementById('fRec1').value = parsed.recommendations[0];
-        if (parsed.recommendations?.[1]) document.getElementById('fRec2').value = parsed.recommendations[1];
-        if (parsed.recommendations?.[2]) document.getElementById('fRec3').value = parsed.recommendations[2];
-        if (parsed.recommendations?.[3]) document.getElementById('fRec4').value = parsed.recommendations[3];
-        if (parsed.recommendations?.[4]) document.getElementById('fRec5').value = parsed.recommendations[4];
-      } catch(e) {
-        console.log('AI response not JSON, using basic analysis');
+  try {
+    // STEP 1: Fetch website
+    if (websiteUrl) {
+      showAIProgress(15, 'Fetching website...');
+      showAIStatus('Fetching and analyzing website...', 'loading');
+      const html = await fetchPage(websiteUrl);
+      if (html) {
+        websiteData = extractMeta(html, websiteUrl);
+        showAIProgress(30, 'Website analyzed. Found ' + (websiteData.hasImages || 0) + ' images, ' + (websiteData.linkCount || 0) + ' links.');
+      } else {
+        showAIProgress(30, 'Website could not be fetched.');
       }
-    } catch(e) {
-      console.log('AI API error:', e.message);
     }
+
+    // STEP 2: Google Maps + business info search
+    if (bizName) {
+      showAIProgress(35, 'Searching Google for business info...');
+      showAIStatus('Researching Google presence and business details...', 'loading');
+      googleData = await checkGoogleMaps(bizName, location) || {};
+      // Also search for additional business info
+      const bizInfo = await searchBusinessInfo(bizName, location);
+      console.log('Google data:', googleData);
+      console.log('Business info:', bizInfo);
+      if (bizInfo) {
+        // Merge all found data — always use the found value
+        if (bizInfo.phone) { googleData.phone = bizInfo.phone; console.log('Found phone:', bizInfo.phone); }
+        if (bizInfo.email) { googleData.email = bizInfo.email; console.log('Found email:', bizInfo.email); }
+        if (bizInfo.address) { googleData.address = bizInfo.address; console.log('Found address:', bizInfo.address); }
+      }
+      // Also try to get location from the form if still empty
+      if (!googleData.address && location) {
+        googleData.address = location;
+        console.log('Using location from form:', location);
+      }
+      if (googleData?.hasMapsListing) {
+        showAIProgress(50, `Google Maps listing found! Rating: ${googleData.rating || 'N/A'}`);
+      } else {
+        showAIProgress(50, 'Google search complete.');
+      }
+    }
+
+    // STEP 3: Social media check
+    showAIProgress(60, 'Checking social media...');
+    showAIStatus('Researching social media presence...', 'loading');
+    if (fbUrl || igUrl || ttUrl) {
+      socialData = { facebook: fbUrl || null, instagram: igUrl || null, tiktok: ttUrl || null };
+    } else if (bizName) {
+      socialData = await checkSocialPresence(bizName);
+    }
+    const socialCount = [socialData.facebook, socialData.instagram, socialData.tiktok].filter(Boolean).length;
+    showAIProgress(75, `Found ${socialCount} social platform(s).`);
+
+    // STEP 4: Analyze and fill form
+    showAIProgress(80, 'Analyzing findings...');
+    showAIStatus('Analyzing all research data...', 'loading');
+    const scores = analyzeAndFill(websiteData, googleData, socialData, bizName);
+
+    // STEP 5: AI deep analysis (if API key provided)
+    if (aiProvider !== 'free' && apiKey) {
+      showAIProgress(88, 'Running AI deep analysis...');
+      showAIStatus('AI is performing deep analysis...', 'loading');
+      try {
+        const researchContext = `BUSINESS: ${bizName || 'Unknown'}
+LOCATION: ${location || 'Not specified'}
+WEBSITE: ${websiteUrl || 'None'}
+WEBSITE ANALYSIS: ${JSON.stringify(websiteData, null, 2)}
+GOOGLE MAPS: ${JSON.stringify(googleData, null, 2)}
+SOCIAL MEDIA: Facebook=${socialData.facebook||'none'}, Instagram=${socialData.instagram||'none'}, TikTok=${socialData.tiktok||'none'}`;
+
+        const prompt = `You are a digital marketing expert at JFX Digital Global Tech in Sapele, Delta State, Nigeria. Analyze this business and provide a comprehensive audit.
+
+${researchContext}
+
+Provide a JSON response with these exact fields:
+{
+  "scores": { "overall": 0-100, "google": 0-20, "website": 0-20, "social": 0-20, "funnel": 0-20, "ad": 0-20 },
+  "googleStatus": "GOOD" | "NEEDS IMPROVEMENT" | "CRITICAL",
+  "websiteStatus": "GOOD" | "NEEDS IMPROVEMENT" | "CRITICAL",
+  "socialStatus": "GOOD" | "NEEDS IMPROVEMENT" | "CRITICAL",
+  "topIssues": [
+    { "problem": "...", "impact": "...", "solution": "..." },
+    { "problem": "...", "impact": "...", "solution": "..." },
+    { "problem": "...", "impact": "...", "solution": "..." }
+  ],
+  "funnelGap": "...",
+  "recommendations": ["Phase 1: ...", "Phase 2: ...", "Phase 3: ...", "Phase 4: ...", "Phase 5: ..."],
+  "potentialResult": "..."
+}`;
+
+        const aiResult = await callAI(prompt, apiKey);
+        // Extract JSON from response (handle markdown code blocks)
+        const jsonMatch = aiResult.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          // Apply AI scores
+          if (parsed.scores) {
+            // Override basic scores with AI scores
+            if (parsed.scores.google !== undefined) scores.google = parsed.scores.google;
+            if (parsed.scores.website !== undefined) scores.website = parsed.scores.website;
+            if (parsed.scores.social !== undefined) scores.social = parsed.scores.social;
+            if (parsed.scores.funnel !== undefined) scores.funnel = parsed.scores.funnel;
+            if (parsed.scores.ad !== undefined) scores.ad = parsed.scores.ad;
+          }
+          // Apply top issues
+          if (parsed.topIssues) {
+            const probFields = ['fTop1Prob','fTop2Prob','fTop3Prob'];
+            const impactFields = ['fTop1Impact','fTop2Impact','fTop3Impact'];
+            const solFields = ['fTop1Sol','fTop2Sol','fTop3Sol'];
+            parsed.topIssues.slice(0, 3).forEach((issue, i) => {
+              if (issue.problem) document.getElementById(probFields[i]).value = issue.problem;
+              if (issue.impact) document.getElementById(impactFields[i]).value = issue.impact;
+              if (issue.solution) document.getElementById(solFields[i]).value = issue.solution;
+            });
+          }
+          // Apply funnel gap
+          if (parsed.funnelGap) document.getElementById('fFunnelGap').value = parsed.funnelGap;
+          // Apply recommendations
+          if (parsed.recommendations) {
+            const recFields = ['fRec1','fRec2','fRec3','fRec4','fRec5'];
+            parsed.recommendations.slice(0, 5).forEach((rec, i) => {
+              if (rec) document.getElementById(recFields[i]).value = rec;
+            });
+          }
+          showAIStatus(`AI deep analysis complete! Score: ${scores.google + scores.website + scores.social + scores.funnel + scores.ad}/100`, 'success');
+        }
+      } catch(e) {
+        console.log('AI API error:', e.message);
+        showAIStatus('AI analysis completed with basic scoring. API error: ' + e.message, 'success');
+      }
+    } else {
+      const totalScore = scores.google + scores.website + scores.social + scores.funnel + scores.ad;
+      showAIStatus(`Research complete! Digital Presence Score: ${totalScore}/100. Review findings and generate your report.`, 'success');
+    }
+
+    showAIProgress(100, 'Complete!');
+    setTimeout(() => hideAIProgress(), 1500);
+
+  } catch(e) {
+    showAIStatus('Error: ' + e.message, 'error');
+    hideAIProgress();
   }
 
-  showAIProgress(100, 'Complete!');
-  setTimeout(() => hideAIProgress(), 1000);
+  resetAIButton(btn);
+}
 
-  const totalScore = scores.google + scores.website + scores.social + scores.funnel + scores.ad;
-  showAIStatus(`Research complete! Estimated Digital Presence Score: ${totalScore}/100. Review and adjust the findings, then generate your report.`, 'success');
-
+function resetAIButton(btn) {
   btn.disabled = false;
   btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Start AI Research';
   aiAnalyzing = false;
