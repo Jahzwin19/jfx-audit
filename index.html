@@ -1748,8 +1748,8 @@ async function checkGoogleMaps(businessName, location) {
   const addressMatch = allSnippetsExt.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd|Quarter|Quater)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
     || allSnippetsExt.match(/(OBIRE|Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun|Ikeja|Lekki|Surulere|Yaba|Victoria Island|Ikoyi|Ajah|Ikorodu|Mushin|Oshodi|Isolo|Agege|Ibadan|Enugu|Aba|Owerri|Onitsha|Nnewi|Aba|Calabar|Uyo|Aba|Ogoni|Yenagoa|Bayelsa|Kaduna|Kano|Jos|Minna|Lokoja|Abeokuta|Ogun|Ondo|Akure|Ado Ekiti|Osogbo|Oshogbo)[^.\n]{5,120}/i)
     || allSnippetsExt.match(/(?:address|location|located at|situated at|find us at|visit us at|office at|headquarters at|based in|based at)[:\s]*([^\n.]{10,120})/i);
-  const phoneMatch = allSnippetsExt.match(/(?:\+\d{1,3}[\s\-\(\)]*)?(?:\(?\d{2,4}\)?[\s\-\.\)]*\d{3,4}[\s\-\.\)]*\d{3,4}[\s\-\.\)]*\d{0,4})/);
-  const phoneClean = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
+  const phoneMatch = allSnippetsExt.match(/(?:tel[:\s]*)?(?:\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d|\+?\d{10,14}|0\d{10}|0\d{3}[\s\-]?\d{3,4}[\s\-]?\d{3,4})/);
+  const phoneClean = phoneMatch ? (phoneMatch[0].replace(/[^0-9+]/g, '').length >= 10 ? phoneMatch[0].replace(/[^0-9+]/g, '') : null) : null;
   const reviewMatch = allSnippetsExt.match(/(\d+(?:\.\d+)?)\s*(?:star|rating|review|\/\s*5)/i)
     || allSnippetsExt.match(/(\d+(?:\.\d+)?)\s*\/\s*5/);
   const reviewCountMatch = allSnippetsExt.match(/(\d+)\s*(?:review|rating|google review)/i);
@@ -1797,9 +1797,9 @@ async function searchBusinessInfo(businessName, location) {
 
   const combinedText = allText + ' ' + emailText + ' ' + addressText;
 
-  const phoneMatch = combinedText.match(/(?:\+\d{1,3}[\s\-\(\)]*)?(?:\(?\d{2,4}\)?[\s\-.\)]*\d{3,4}[\s\-.\)]*\d{3,4}[\s\-.\)]*\d{0,4})/);
+  const phoneMatch = combinedText.match(/(?:tel[:\s]*)?(?:\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d|\+?\d{10,14}|0\d{10}|0\d{3}[\s\-]?\d{3,4}[\s\-]?\d{3,4})/);
   const phoneClean = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
-  const emailMatch = combinedText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const emailMatch = combinedText.match(/[a-zA-Z0-9._%+-]+@(?!duckduckgo)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   const addressMatch = combinedText.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd|Quarter|Quater)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
     || combinedText.match(/(OBIRE|Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun|Ikeja|Lekki|Surulere|Yaba|Victoria Island|Ikoyi|Ajah|Ikorodu|Mushin|Oshodi|Isolo|Agege|Ibadan|Enugu|Aba|Owerri|Onitsha|Nnewi|Calabar|Uyo|Kaduna|Kano|Jos|Minna|Abeokuta|Akure|Ado Ekiti|Osogbo)[^.\n]{5,120}/i)
     || combinedText.match(/(?:address|location|located at|situated at|find us at|visit us at|office at|based in|based at)[:\s]*([^\n.]{10,120})/i);
@@ -1879,11 +1879,11 @@ function extractMeta(html, url) {
   const ogDesc = get('meta[property="og:description"]');
 
   // Extract phone numbers
-  const phoneMatch = bodyText.match(/(?:\+\d{1,3}[\s\-\(\)]*)?(?:\(?\d{2,4}\)?[\s\-.\)]*\d{3,4}[\s\-.\)]*\d{3,4}[\s\-.\)]*\d{0,4})/);
+  const phoneMatch = bodyText.match(/(?:tel[:\s]*)?(?:\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d|\+?\d{10,14}|0\d{10}|0\d{3}[\s\-]?\d{3,4}[\s\-]?\d{3,4})/);
   const phone = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
 
   // Extract email
-  const emailMatch = bodyText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const emailMatch = bodyText.match(/[a-zA-Z0-9._%+-]+@(?!duckduckgo)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   const email = emailMatch ? emailMatch[0] : null;
 
   // Extract address/location
@@ -3011,10 +3011,6 @@ Provide a JSON response with these exact fields:
 
     showAIProgress(100, 'Complete!');
     setTimeout(() => hideAIProgress(), 1500);
-
-    // Auto-generate report after research
-    closeAIModal();
-    setTimeout(() => generateReport(), 500);
 
     // Track this audit
     fetch(`${API_BASE}/track`, {
