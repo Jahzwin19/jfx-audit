@@ -2186,498 +2186,6 @@ function analyzeAndFill(websiteData, googleData, socialData, bizName) {
 }
 
 // ============================================================
-// INDUSTRY-SPECIFIC CONTENT FOR DEMO WEBSITES
-// ============================================================
-function getIndustryContent(industry, bizName, servicesText) {
-  const map = {
-    'real estate': {
-      heroImg: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80',
-      tagline: `Find Your Perfect ${bizName.includes('Property') ? 'Property' : 'Home'} With Us`,
-      aboutText: `${bizName} is a trusted name in real estate, helping clients find their dream homes and investment properties. With deep knowledge of the local market and a commitment to transparent dealings, we make property transactions seamless and stress-free.`,
-      accent: '#E67E22', accentGradient: 'linear-gradient(135deg,#E67E22,#D35400)',
-      services: [
-        { icon: '🏠', title: 'Property Sales', desc: 'Browse our curated selection of residential and commercial properties available for sale.' },
-        { icon: '🔑', title: 'Letting & Rentals', desc: 'Find the perfect rental property with flexible terms and competitive rates.' },
-        { icon: '📊', title: 'Property Valuation', desc: 'Get accurate market valuations for your property backed by data and expertise.' },
-        { icon: '🏗️', title: 'Land & Development', desc: 'Explore prime land opportunities for residential and commercial development.' },
-        { icon: '📋', title: 'Legal Documentation', desc: 'We handle all paperwork and legal processes for smooth property transactions.' },
-        { icon: '🤝', title: 'Consultation', desc: 'Free expert advice on property investment, market trends, and portfolio management.' }
-      ],
-      stats: [
-        { num: '500+', label: 'Properties Sold' },
-        { num: '98%', label: 'Client Satisfaction' },
-        { num: '15+', label: 'Years Experience' },
-        { num: '24/7', label: 'Support Available' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80', label: 'Luxury Villa' },
-        { img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80', label: 'Modern Apartment' },
-        { img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80', label: 'Commercial Space' },
-        { img: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80', label: 'Prime Land' }
-      ],
-      testimonials: [
-        { name: 'Chidi O.', role: 'Property Investor', quote: `${bizName} helped me find the perfect investment property. Their market knowledge is exceptional and the process was smooth from start to finish.` },
-        { name: 'Amina B.', role: 'First-time Buyer', quote: `As a first-time buyer, I was nervous. The team at ${bizName} guided me through every step. I'm now a proud homeowner!` },
-        { name: 'Emeka N.', role: 'Landlord', quote: `I've been using ${bizName} for my rental properties for years. Professional, reliable, and always delivers results.` }
-      ],
-      ctaText: 'Ready to Find Your Dream Property?'
-    },
-    'hotel & hospitality': {
-      heroImg: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80',
-      tagline: `Experience Luxury at ${bizName}`,
-      aboutText: `${bizName} offers a world-class hospitality experience with elegant rooms, exceptional dining, and personalized service. Whether you're here for business or leisure, we ensure your stay is unforgettable.`,
-      accent: '#8E44AD', accentGradient: 'linear-gradient(135deg,#8E44AD,#6C3483)',
-      services: [
-        { icon: '🛏️', title: 'Luxury Suites', desc: 'Elegantly furnished rooms with modern amenities and stunning views.' },
-        { icon: '🍽️', title: 'Fine Dining', desc: 'Award-winning restaurant serving local and international cuisine.' },
-        { icon: '🎉', title: 'Event Hosting', desc: 'Premium event spaces for weddings, conferences, and celebrations.' },
-        { icon: '💆', title: 'Spa & Wellness', desc: 'Relax and rejuvenate with our full-service spa and wellness center.' },
-        { icon: '🏋️', title: 'Fitness Center', desc: 'State-of-the-art gym facilities for health-conscious guests.' },
-        { icon: '🚗', title: 'Airport Transfer', desc: 'Complimentary pickup and drop-off service for guests.' }
-      ],
-      stats: [
-        { num: '200+', label: 'Luxury Rooms' },
-        { num: '4.9', label: 'Guest Rating' },
-        { num: '50+', label: 'Events Hosted' },
-        { num: '10K+', label: 'Happy Guests' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600&q=80', label: 'Deluxe Suite' },
-        { img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80', label: 'Fine Dining' },
-        { img: 'https://images.unsplash.com/photo-1540555700478-4be289fbec6d?w=600&q=80', label: 'Spa & Relaxation' },
-        { img: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80', label: 'Event Hall' }
-      ],
-      testimonials: [
-        { name: 'Fatima A.', role: 'Wedding Guest', quote: `${bizName} made our event absolutely magical. The staff went above and beyond to ensure everything was perfect.` },
-        { name: 'John D.', role: 'Business Traveler', quote: 'The best hotel experience I\'ve had. The rooms are beautiful and the service is impeccable. Will definitely return.' },
-        { name: 'Sarah M.', role: 'Vacation Guest', quote: `Our family vacation at ${bizName} was wonderful. The kids loved the pool and we loved the spa. Perfect getaway.` }
-      ],
-      ctaText: 'Book Your Unforgettable Stay'
-    },
-    'event centre': {
-      heroImg: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=80',
-      tagline: `Make Every Event Memorable at ${bizName}`,
-      aboutText: `${bizName} is the premier event venue for weddings, conferences, birthdays, and corporate events. With state-of-the-art facilities and a dedicated events team, we bring your vision to life.`,
-      accent: '#E74C3C', accentGradient: 'linear-gradient(135deg,#E74C3C,#C0392B)',
-      services: [
-        { icon: '💒', title: 'Weddings', desc: 'Dream wedding setups with elegant decor and seamless coordination.' },
-        { icon: '🎤', title: 'Conferences', desc: 'Professional AV equipment and flexible seating for corporate events.' },
-        { icon: '🎂', title: 'Birthday Parties', desc: 'Fun and stylish birthday celebrations for all ages.' },
-        { icon: '🎤', title: 'Live Performances', desc: 'Stage and sound setup for concerts, comedy shows, and performances.' },
-        { icon: '🍽️', title: 'Catering Services', desc: 'In-house catering with customizable menus for any occasion.' },
-        { icon: '📸', title: 'Event Photography', desc: 'Professional photography and videography to capture every moment.' }
-      ],
-      stats: [
-        { num: '1000+', label: 'Events Hosted' },
-        { num: '500+', label: 'Weddings Done' },
-        { num: '5', label: 'Event Halls' },
-        { num: '100%', label: 'Satisfaction Rate' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80', label: 'Wedding Setup' },
-        { img: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=600&q=80', label: 'Corporate Event' },
-        { img: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80', label: 'Birthday Party' },
-        { img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80', label: 'Conference Hall' }
-      ],
-      testimonials: [
-        { name: 'Grace O.', role: 'Bride', quote: `${bizName} made our wedding day absolutely perfect. The venue was stunning and the staff was incredible.` },
-        { name: 'David K.', role: 'Event Planner', quote: 'I\'ve organized dozens of events at this venue. Always professional, always impressive. My go-to recommendation.' },
-        { name: 'Linda P.', role: 'Corporate Client', quote: `Our annual conference at ${bizName} was a huge success. The facilities are top-notch and the team is very supportive.` }
-      ],
-      ctaText: 'Plan Your Dream Event Today'
-    },
-    'auto dealer': {
-      heroImg: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&q=80',
-      tagline: `Drive Your Dream Car from ${bizName}`,
-      aboutText: `${bizName} is your trusted partner for quality vehicles. We offer a wide selection of cars, SUVs, and trucks — both new and pre-owned — with flexible financing options and warranty coverage.`,
-      accent: '#2C3E50', accentGradient: 'linear-gradient(135deg,#2C3E50,#1A252F)',
-      services: [
-        { icon: '🚗', title: 'New Cars', desc: 'Brand new vehicles from top manufacturers with full warranty.' },
-        { icon: '🚙', title: 'Pre-Owned Cars', desc: 'Certified pre-owned vehicles thoroughly inspected for quality.' },
-        { icon: '💰', title: 'Flexible Financing', desc: 'Affordable payment plans and trade-in options available.' },
-        { icon: '🔧', title: 'After-Sales Service', desc: 'Genuine parts and expert maintenance to keep your car running.' },
-        { icon: '📋', title: 'Documentation', desc: 'We handle all registration and documentation hassle-free.' },
-        { icon: '🛡️', title: 'Warranty Plans', desc: 'Extended warranty options for peace of mind.' }
-      ],
-      stats: [
-        { num: '300+', label: 'Cars in Stock' },
-        { num: '1000+', label: 'Cars Sold' },
-        { num: '50+', label: 'Brands Available' },
-        { num: '99%', label: 'Customer Rating' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600&q=80', label: 'Luxury Sedan' },
-        { img: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=600&q=80', label: 'SUV Collection' },
-        { img: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=600&q=80', label: 'Sports Cars' },
-        { img: 'https://images.unsplash.com/photo-1619682817481-e994891cd1f5?w=600&q=80', label: 'Trucks & Vans' }
-      ],
-      testimonials: [
-        { name: 'Ahmed S.', role: 'Car Buyer', quote: `Got my dream car from ${bizName} at an amazing price. The process was smooth and transparent.` },
-        { name: 'Blessing I.', role: 'First-time Buyer', quote: 'The team helped me choose the perfect car within my budget. Excellent customer service!' },
-        { name: 'Michael T.', role: 'Repeat Customer', quote: `I've bought 3 cars from ${bizName} now. They always have the best deals and the most professional service.` }
-      ],
-      ctaText: 'Find Your Perfect Ride Today'
-    },
-    'restaurant': {
-      heroImg: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80',
-      tagline: `Taste the Difference at ${bizName}`,
-      aboutText: `${bizName} brings you an extraordinary culinary experience with fresh ingredients, authentic recipes, and a warm atmosphere. From local favorites to international cuisines, every dish is crafted with passion.`,
-      accent: '#E67E22', accentGradient: 'linear-gradient(135deg,#E67E22,#D35400)',
-      services: [
-        { icon: '🍽️', title: 'Dine-In', desc: 'Elegant dining experience with indoor and outdoor seating.' },
-        { icon: '🥡', title: 'Takeaway', desc: 'Freshly prepared meals ready for quick pickup.' },
-        { icon: '🚗', title: 'Home Delivery', desc: 'Fast delivery right to your doorstep via WhatsApp or phone.' },
-        { icon: '🎉', title: 'Private Events', desc: 'Book our space for birthday parties, reunions, and celebrations.' },
-        { icon: '👨‍🍳', title: 'Catering', desc: 'Professional catering services for events of any size.' },
-        { icon: '🧁', title: 'Special Menu', desc: 'Seasonal specials and custom menus for dietary preferences.' }
-      ],
-      stats: [
-        { num: '50+', label: 'Menu Items' },
-        { num: '4.8', label: 'Average Rating' },
-        { num: '500+', label: 'Daily Orders' },
-        { num: '10+', label: 'Years Serving' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80', label: 'Signature Dish' },
-        { img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80', label: 'Fresh Pizza' },
-        { img: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&q=80', label: 'Grilled Special' },
-        { img: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600&q=80', label: 'Desserts' }
-      ],
-      testimonials: [
-        { name: 'Ngozi A.', role: 'Regular Customer', quote: `The food at ${bizName} is absolutely amazing! Best jollof rice in town. We eat here every weekend.` },
-        { name: 'Kevin R.', role: 'Food Blogger', quote: 'One of the best dining experiences I\'ve had. The flavors are authentic and the presentation is beautiful.' },
-        { name: 'Aisha M.', role: 'Event Host', quote: `${bizName} catered our family reunion and everyone loved the food. Professional service and delicious meals.` }
-      ],
-      ctaText: 'Reserve Your Table Now'
-    },
-    'lounge & bar': {
-      heroImg: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1200&q=80',
-      tagline: `Unwind at ${bizName}`,
-      aboutText: `${bizName} is the ultimate destination for nightlife, cocktails, and good vibes. With a carefully curated drinks menu, live entertainment, and a vibrant atmosphere, every night is a celebration.`,
-      accent: '#9B59B6', accentGradient: 'linear-gradient(135deg,#9B59B6,#8E44AD)',
-      services: [
-        { icon: '🍸', title: 'Premium Cocktails', desc: 'Handcrafted cocktails by our expert mixologists.' },
-        { icon: '🎵', title: 'Live Music', desc: 'Live performances and DJ nights every weekend.' },
-        { icon: '🪝', title: 'VIP Section', desc: 'Exclusive VIP tables and bottle service for special occasions.' },
-        { icon: '🍖', title: 'Gastropub Menu', desc: 'Delicious bar food and appetizers to complement your drinks.' },
-        { icon: '🎉', title: 'Private Parties', desc: 'Book the lounge for birthdays, reunions, and corporate events.' },
-        { icon: '📺', title: 'Sports Viewing', desc: 'Big screens for live match viewing with friends.' }
-      ],
-      stats: [
-        { num: '100+', label: 'Drink Options' },
-        { num: '5K+', label: 'Monthly Guests' },
-        { num: '5', label: 'Nights per Week' },
-        { num: '4.9', label: 'Guest Rating' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=600&q=80', label: 'Bar Setup' },
-        { img: 'https://images.unsplash.com/photo-1514362545857-3bc16c7d44a3?w=600&q=80', label: 'Cocktail Specials' },
-        { img: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80', label: 'Live Night' },
-        { img: 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=600&q=80', label: 'VIP Lounge' }
-      ],
-      testimonials: [
-        { name: 'Tunde K.', role: 'Regular Patron', quote: `${bizName} is my go-to spot every Friday. The music, the drinks, the vibe — everything is perfect.` },
-        { name: 'Nneka E.', role: 'Birthday Host', quote: 'Hosted my 30th birthday here and it was epic! The team made sure everything was perfect.' },
-        { name: 'Sam O.', role: 'Sports Fan', quote: 'Best place to watch matches with friends. Great atmosphere and cold drinks. Always a good time.' }
-      ],
-      ctaText: 'Join Us Tonight'
-    },
-    'health & medical': {
-      heroImg: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=1200&q=80',
-      tagline: `Your Health, Our Priority at ${bizName}`,
-      aboutText: `${bizName} provides compassionate, professional healthcare services with state-of-the-art equipment and experienced medical professionals. Your well-being is at the heart of everything we do.`,
-      accent: '#27AE60', accentGradient: 'linear-gradient(135deg,#27AE60,#1E8449)',
-      services: [
-        { icon: '🩺', title: 'General Consultation', desc: 'Comprehensive health assessments and personalized treatment plans.' },
-        { icon: '💉', title: 'Vaccinations', desc: 'Full range of immunizations for children and adults.' },
-        { icon: '🔬', title: 'Laboratory Services', desc: 'Advanced diagnostic testing with quick and accurate results.' },
-        { icon: '🦷', title: 'Dental Care', desc: 'Complete dental services from cleaning to advanced procedures.' },
-        { icon: '👁️', title: 'Eye Care', desc: 'Professional eye examinations and vision correction services.' },
-        { icon: '💊', title: 'Pharmacy', desc: 'In-house pharmacy with genuine medications at fair prices.' }
-      ],
-      stats: [
-        { num: '10K+', label: 'Patients Served' },
-        { num: '15+', label: 'Doctors' },
-        { num: '4.9', label: 'Patient Rating' },
-        { num: '24/7', label: 'Emergency Service' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&q=80', label: 'Modern Facility' },
-        { img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80', label: 'Expert Doctors' },
-        { img: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&q=80', label: 'Advanced Equipment' },
-        { img: 'https://images.unsplash.com/photo-1551190822-a9ce113ac100?w=600&q=80', label: 'Patient Care' }
-      ],
-      testimonials: [
-        { name: 'Patience O.', role: 'Patient', quote: `The doctors at ${bizName} are very professional and caring. They took time to explain my condition and treatment options.` },
-        { name: 'George N.', role: 'Parent', quote: 'I bring my children here for checkups. The staff is friendly and the facility is always clean. Highly recommended.' },
-        { name: 'Blessing I.', role: 'Patient', quote: `${bizName} saved my life with their quick emergency response. I\'m forever grateful for their excellent care.` }
-      ],
-      ctaText: 'Book Your Appointment Today'
-    },
-    'legal services': {
-      heroImg: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80',
-      tagline: `Expert Legal Solutions from ${bizName}`,
-      aboutText: `${bizName} provides trusted legal services with a team of experienced lawyers specializing in corporate, civil, and family law. We protect your rights and interests with integrity and professionalism.`,
-      accent: '#1A5276', accentGradient: 'linear-gradient(135deg,#1A5276,#154360)',
-      services: [
-        { icon: '⚖️', title: 'Corporate Law', desc: 'Business formation, contracts, mergers, and regulatory compliance.' },
-        { icon: '🏠', title: 'Real Estate Law', desc: 'Property transactions, tenancy agreements, and land disputes.' },
-        { icon: '👨‍👩‍👧', title: 'Family Law', desc: 'Divorce, custody, adoption, and family dispute resolution.' },
-        { icon: '📋', title: 'Legal Documentation', desc: 'Wills, power of attorney, and legal advisory services.' },
-        { icon: '🏛️', title: 'Litigation', desc: 'Aggressive representation in civil and criminal courts.' },
-        { icon: '🤝', title: 'Mediation', desc: 'Alternative dispute resolution to save time and costs.' }
-      ],
-      stats: [
-        { num: '500+', label: 'Cases Won' },
-        { num: '20+', label: 'Years Experience' },
-        { num: '98%', label: 'Success Rate' },
-        { num: '24/7', label: 'Legal Support' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80', label: 'Our Office' },
-        { img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600&q=80', label: 'Legal Team' },
-        { img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80', label: 'Client Meeting' },
-        { img: 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=600&q=80', label: 'Court Representation' }
-      ],
-      testimonials: [
-        { name: 'Emeka A.', role: 'Business Owner', quote: `${bizName} handled our company registration and contracts perfectly. Very professional and thorough.` },
-        { name: 'Chioma N.', role: 'Client', quote: 'They won my property case after 2 years of struggle. The team is dedicated and really knows the law.' },
-        { name: 'Ibrahim K.', role: 'Corporate Client', quote: `Outstanding legal service. ${bizName} has been our company's legal partner for over 5 years now.` }
-      ],
-      ctaText: 'Get a Free Legal Consultation'
-    },
-    'education': {
-      heroImg: 'https://images.unsplash.com/photo-1523050854058-8df90110c476?w=1200&q=80',
-      tagline: `Shape the Future at ${bizName}`,
-      aboutText: `${bizName} is committed to providing quality education that empowers students to achieve their full potential. With experienced educators and modern facilities, we create an environment where learning thrives.`,
-      accent: '#2980B9', accentGradient: 'linear-gradient(135deg,#2980B9,#1F618D)',
-      services: [
-        { icon: '📚', title: 'Academic Programs', desc: 'Comprehensive curriculum from primary to tertiary education levels.' },
-        { icon: '💻', title: 'Digital Learning', desc: 'Modern computer labs and e-learning platforms for tech-savvy education.' },
-        { icon: '🎨', title: 'Extra-Curricular', desc: 'Sports, arts, music, and clubs for holistic child development.' },
-        { icon: '📝', title: 'Exam Preparation', desc: 'Special coaching for WAEC, NECO, JAMB, and international exams.' },
-        { icon: '👩‍🏫', title: 'Qualified Teachers', desc: 'Experienced and certified educators passionate about teaching.' },
-        { icon: '🏫', title: 'Modern Facilities', desc: 'Well-equipped classrooms, labs, library, and sports facilities.' }
-      ],
-      stats: [
-        { num: '2000+', label: 'Students' },
-        { num: '100+', label: 'Teachers' },
-        { num: '95%', label: 'Pass Rate' },
-        { num: '15+', label: 'Years Running' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&q=80', label: 'Campus' },
-        { img: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80', label: 'Classroom' },
-        { img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80', label: 'Science Lab' },
-        { img: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=600&q=80', label: 'Library' }
-      ],
-      testimonials: [
-        { name: 'Mrs. Okafor', role: 'Parent', quote: `My children have improved tremendously since joining ${bizName}. The teachers are dedicated and the environment is excellent.` },
-        { name: 'David E.', role: 'Student', quote: 'The digital learning facilities at ${bizName} are top-notch. I\'ve learned more here than anywhere else.' },
-        { name: 'Dr. Chukwu', role: 'School Board', quote: `${bizName} consistently produces excellent results. We\'re proud of our academic achievements.` }
-      ],
-      ctaText: 'Enroll Your Child Today'
-    },
-    'technology': {
-      heroImg: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80',
-      tagline: `Innovate with ${bizName}`,
-      aboutText: `${bizName} delivers cutting-edge technology solutions that transform businesses. From software development to IT consulting, we help organizations leverage technology for growth and efficiency.`,
-      accent: '#3498DB', accentGradient: 'linear-gradient(135deg,#3498DB,#2980B9)',
-      services: [
-        { icon: '💻', title: 'Software Development', desc: 'Custom software, web apps, and mobile applications built to specification.' },
-        { icon: '☁️', title: 'Cloud Solutions', desc: 'Cloud migration, hosting, and management on AWS, Azure, and GCP.' },
-        { icon: '🔒', title: 'Cybersecurity', desc: 'Protect your business with advanced security audits and implementations.' },
-        { icon: '📊', title: 'Data Analytics', desc: 'Transform raw data into actionable business intelligence.' },
-        { icon: '🌐', title: 'Web Design', desc: 'Beautiful, responsive websites that convert visitors to customers.' },
-        { icon: '🛠️', title: 'IT Support', desc: '24/7 technical support and managed IT services for businesses.' }
-      ],
-      stats: [
-        { num: '200+', label: 'Projects Delivered' },
-        { num: '50+', label: 'Enterprise Clients' },
-        { num: '99.9%', label: 'Uptime SLA' },
-        { num: '24/7', label: 'Support Available' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80', label: 'Tech Solutions' },
-        { img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80', label: 'Analytics' },
-        { img: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80', label: 'Cloud Infrastructure' },
-        { img: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&q=80', label: 'Development' }
-      ],
-      testimonials: [
-        { name: 'Patrick I.', role: 'CTO, FinTech Co.', quote: `${bizName} built our mobile app from scratch. The quality and speed of delivery exceeded our expectations.` },
-        { name: 'Sandra M.', role: 'CEO, E-commerce', quote: 'Their cloud migration saved us 40% on infrastructure costs. Highly skilled team with excellent communication.' },
-        { name: 'Emmanuel O.', role: 'Startup Founder', quote: `Working with ${bizName} was a game-changer for our startup. They understood our vision and delivered perfectly.` }
-      ],
-      ctaText: 'Start Your Digital Transformation'
-    },
-    'retail & fashion': {
-      heroImg: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80',
-      tagline: `Define Your Style with ${bizName}`,
-      aboutText: `${bizName} offers the latest fashion trends and quality products for the style-conscious customer. With a carefully curated collection and exceptional customer service, we help you look and feel your best.`,
-      accent: '#E91E63', accentGradient: 'linear-gradient(135deg,#E91E63,#C2185B)',
-      services: [
-        { icon: '👗', title: 'Latest Fashion', desc: 'Trendy clothing collections for men, women, and children.' },
-        { icon: '👟', title: 'Footwear', desc: 'Premium shoes and sneakers for every occasion.' },
-        { icon: '👜', title: 'Accessories', desc: 'Bags, jewelry, watches, and fashion accessories.' },
-        { icon: '✂️', title: 'Tailoring', desc: 'Custom tailoring and alteration services for perfect fit.' },
-        { icon: '🎁', title: 'Gift Shopping', desc: 'Curated gift options and gift wrapping services.' },
-        { icon: '📦', title: 'Online Shopping', desc: 'Shop from anywhere with our WhatsApp ordering service.' }
-      ],
-      stats: [
-        { num: '5000+', label: 'Products' },
-        { num: '10K+', label: 'Happy Customers' },
-        { num: '50+', label: 'Brands Stocked' },
-        { num: '4.8', label: 'Customer Rating' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80', label: 'Store Interior' },
-        { img: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=80', label: 'Fashion Collection' },
-        { img: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80', label: 'Accessories' },
-        { img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80', label: 'Shopping Experience' }
-      ],
-      testimonials: [
-        { name: 'Blessing E.', role: 'Fashion Lover', quote: `I always find the most stylish pieces at ${bizName}. Their collection is always on trend and the prices are great.` },
-        { name: 'Adaeze N.', role: 'Regular Customer', quote: 'The customer service is exceptional. They helped me pick the perfect outfit for my event. Love this store!' },
-        { name: 'Funke O.', role: 'Online Shopper', quote: `Ordering via WhatsApp is so convenient. My package arrived on time and the quality was exactly as shown. ${bizName} is the best!` }
-      ],
-      ctaText: 'Shop the Latest Collection'
-    },
-    'beauty & wellness': {
-      heroImg: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80',
-      tagline: `Glow Up at ${bizName}`,
-      aboutText: `${bizName} is your destination for beauty and wellness. Our expert stylists and therapists provide premium services in a relaxing environment, helping you look and feel your absolute best.`,
-      accent: '#F39C12', accentGradient: 'linear-gradient(135deg,#F39C12,#E67E22)',
-      services: [
-        { icon: '💇', title: 'Hair Styling', desc: 'Professional cuts, colors, treatments, and styling for all hair types.' },
-        { icon: '💅', title: 'Nail Art', desc: 'Manicures, pedicures, gel nails, and creative nail designs.' },
-        { icon: '💆', title: 'Facials & Skincare', desc: 'Rejuvenating facials and skincare treatments for glowing skin.' },
-        { icon: '🧴', title: 'Body Treatments', desc: 'Massages, body scrubs, and relaxation therapies.' },
-        { icon: '💄', title: 'Makeup Artistry', desc: 'Bridal, party, and editorial makeup by skilled artists.' },
-        { icon: '🧖', title: 'Spa Services', desc: 'Full spa experience with steam, sauna, and wellness packages.' }
-      ],
-      stats: [
-        { num: '5000+', label: 'Clients Served' },
-        { num: '20+', label: 'Expert Stylists' },
-        { num: '4.9', label: 'Client Rating' },
-        { num: '10+', label: 'Years Experience' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80', label: 'Salon Interior' },
-        { img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80', label: 'Hair Styling' },
-        { img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80', label: 'Nail Art' },
-        { img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80', label: 'Skincare' }
-      ],
-      testimonials: [
-        { name: 'Amara C.', role: 'Regular Client', quote: `${bizName} is the only place I trust with my hair. The stylists are amazing and always deliver exactly what I want.` },
-        { name: 'Nneka A.', role: 'Bride', quote: 'My bridal makeup was absolutely stunning. Everyone at my wedding complimented how beautiful I looked. Thank you ${bizName}!' },
-        { name: 'Grace O.', role: 'Spa Client', quote: 'The spa experience at ${bizName} is heavenly. I always leave feeling refreshed and rejuvenated.' }
-      ],
-      ctaText: 'Book Your Beauty Session'
-    },
-    'construction': {
-      heroImg: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80',
-      tagline: `Building Excellence with ${bizName}`,
-      aboutText: `${bizName} is a leading construction company delivering high-quality building projects. From residential homes to commercial complexes, we build structures that stand the test of time.`,
-      accent: '#D35400', accentGradient: 'linear-gradient(135deg,#D35400,#A04000)',
-      services: [
-        { icon: '🏗️', title: 'Building Construction', desc: 'Complete residential and commercial building construction services.' },
-        { icon: '🔨', title: 'Renovation', desc: 'Transform existing spaces with modern renovation and remodeling.' },
-        { icon: '📐', title: 'Architecture', desc: 'Professional architectural design and planning services.' },
-        { icon: '🔌', title: 'Electrical Work', desc: 'Safe and compliant electrical installations and repairs.' },
-        { icon: '🚿', title: 'Plumbing', desc: 'Expert plumbing services for new builds and maintenance.' },
-        { icon: '🏠', title: 'Interior Design', desc: 'Beautiful interior finishing and decoration services.' }
-      ],
-      stats: [
-        { num: '200+', label: 'Projects Completed' },
-        { num: '15+', label: 'Years Experience' },
-        { num: '50+', label: 'Expert Workers' },
-        { num: '100%', label: 'Quality Guarantee' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80', label: 'Building Project' },
-        { img: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&q=80', label: 'Site Work' },
-        { img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80', label: 'Completed Home' },
-        { img: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80', label: 'Modern Design' }
-      ],
-      testimonials: [
-        { name: 'Chief Obi', role: 'Homeowner', quote: `${bizName} built our dream home from scratch. The quality of work and attention to detail is exceptional.` },
-        { name: 'Engr. Emeka', role: 'Developer', quote: 'I\'ve worked with ${bizName} on multiple projects. They always deliver on time and within budget. Highly recommended.' },
-        { name: 'Mrs. Adekunle', role: 'Client', quote: `The renovation of our office was done beautifully. ${bizName} transformed our space completely. Great work!` }
-      ],
-      ctaText: 'Get a Free Project Quote'
-    },
-    'logistics': {
-      heroImg: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&q=80',
-      tagline: `Moving Your Business Forward with ${bizName}`,
-      aboutText: `${bizName} provides reliable logistics and delivery solutions for businesses and individuals. With a fleet of vehicles and a dedicated team, we ensure your shipments arrive safely and on time.`,
-      accent: '#F39C12', accentGradient: 'linear-gradient(135deg,#F39C12,#D68910)',
-      services: [
-        { icon: '🚚', title: 'Delivery Services', desc: 'Fast and reliable same-day and next-day delivery across the country.' },
-        { icon: '📦', title: 'Warehousing', desc: 'Secure warehousing and inventory management solutions.' },
-        { icon: '🌐', title: 'International Shipping', desc: 'Global freight forwarding and customs clearance services.' },
-        { icon: '🚛', title: 'Heavy Haulage', desc: 'Transportation of heavy equipment and oversized cargo.' },
-        { icon: '📋', title: 'Supply Chain', desc: 'End-to-end supply chain management and optimization.' },
-        { icon: '📱', title: 'Track & Trace', desc: 'Real-time tracking and delivery notifications for all shipments.' }
-      ],
-      stats: [
-        { num: '10K+', label: 'Deliveries/Month' },
-        { num: '100+', label: 'Vehicles' },
-        { num: '99%', label: 'On-Time Rate' },
-        { num: '24/7', label: 'Operations' }
-      ],
-      gallery: [
-        { img: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80', label: 'Fleet' },
-        { img: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=600&q=80', label: 'Warehouse' },
-        { img: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80', label: 'Delivery Van' },
-        { img: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5eb19?w=600&q=80', label: 'Tracking' }
-      ],
-      testimonials: [
-        { name: 'Oluwaseun A.', role: 'E-commerce Owner', quote: `${bizName} handles all our deliveries efficiently. Their tracking system gives us and our customers peace of mind.` },
-        { name: 'Chinedu O.', role: 'Manufacturer', quote: 'Reliable logistics partner for over 3 years. They understand our supply chain needs perfectly.' },
-        { name: 'Amina B.', role: 'Small Business', quote: `Fast delivery and great customer service. ${bizName} has helped my business grow with reliable logistics.` }
-      ],
-      ctaText: 'Schedule a Pickup Today'
-    }
-  };
-
-  // Default fallback for unknown industries
-  const defaults = {
-    heroImg: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80',
-    tagline: `Welcome to ${bizName}`,
-    aboutText: `${bizName} is dedicated to providing exceptional service to our customers. With a focus on quality, reliability, and customer satisfaction, we strive to exceed expectations in everything we do.`,
-    accent: '#10B981', accentGradient: 'linear-gradient(135deg,#10B981,#059669)',
-    services: [
-      { icon: '⭐', title: 'Quality Service', desc: 'Delivering premium quality in every aspect of our work with attention to detail.' },
-      { icon: '🤝', title: 'Customer Focus', desc: 'Your satisfaction is our priority. We listen, understand, and deliver.' },
-      { icon: '🏆', title: 'Excellence', desc: 'Committed to the highest standards of professional service.' },
-      { icon: '💡', title: 'Innovation', desc: 'Modern solutions and approaches to meet evolving customer needs.' },
-      { icon: '📋', title: 'Consultation', desc: 'Expert advice and personalized solutions for your specific requirements.' },
-      { icon: '🛡️', title: 'Reliability', desc: 'Consistent, dependable service you can count on every time.' }
-    ],
-    stats: [
-      { num: '500+', label: 'Happy Clients' },
-      { num: '10+', label: 'Years Experience' },
-      { num: '4.9', label: 'Customer Rating' },
-      { num: '24/7', label: 'Support' }
-    ],
-    gallery: [
-      { img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80', label: 'Our Office' },
-      { img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80', label: 'Team Work' },
-      { img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80', label: 'Collaboration' },
-      { img: 'https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=600&q=80', label: 'Our Space' }
-    ],
-    testimonials: [
-      { name: 'Client A', role: 'Valued Customer', quote: `${bizName} provides outstanding service. I highly recommend them to anyone looking for quality and reliability.` },
-      { name: 'Client B', role: 'Business Partner', quote: 'Professional, responsive, and dedicated. Working with ${bizName} has been a great experience.' },
-      { name: 'Client C', role: 'Satisfied Customer', quote: `Excellent experience with ${bizName}. They truly care about their customers and it shows in their work.` }
-    ],
-    ctaText: `Get in Touch with ${bizName}`
-  };
-
-  return map[industry] || defaults;
-}
-
-// ============================================================
 // AUTO-GENERATE DEMO WEBSITE
 // ============================================================
 function generateDemoWebsite(bizName, websiteData, googleData, socialData, industry) {
@@ -2685,7 +2193,7 @@ function generateDemoWebsite(bizName, websiteData, googleData, socialData, indus
   const email = websiteData?.email || '';
   const address = websiteData?.address || googleData?.address || '';
   const waNumber = websiteData?.whatsappNumber || phone.replace(/[^0-9]/g, '');
-  const services = websiteData?.services || '';
+  const rawServices = websiteData?.services || '';
   const description = websiteData?.businessDesc || websiteData?.description || '';
   const fbUrl = socialData?.facebook || '';
   const igUrl = socialData?.instagram || '';
@@ -2696,23 +2204,69 @@ function generateDemoWebsite(bizName, websiteData, googleData, socialData, indus
 
   const waLink = waNumber ? `https://wa.me/${waNumber.replace(/[^0-9]/g, '').replace(/^0/, '234')}?text=Hello%20${encodeURIComponent(bizName)},%20I%27m%20interested%20in%20your%20services` : '#';
   const telLink = phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : '#';
-  const igClean = igUrl ? igUrl.replace(/\/+$/, '') : '';
-  const fbClean = fbUrl ? fbUrl.replace(/\/+$/, '') : '';
 
-  // Industry-specific content
-  const industryData = getIndustryContent(ind, bizName, services);
-  const heroImg = industryData.heroImg;
-  const tagline = industryData.tagline;
-  const aboutText = industryData.aboutText;
-  const serviceCards = industryData.services;
-  const statItems = industryData.stats;
-  const galleryItems = industryData.gallery;
-  const testimonialItems = industryData.testimonials;
-  const ctaText = industryData.ctaText;
-  const accentColor = industryData.accent;
-  const accentGradient = industryData.accentGradient;
+  // Extract REAL images from the business website
+  const realImages = [];
+  if (websiteData?.htmlSnippet) {
+    const imgMatches = websiteData.htmlSnippet.match(/src=["']([^"']*(?:\.jpg|\.jpeg|\.png|\.webp)[^"']*)/gi) || [];
+    imgMatches.forEach(m => {
+      const url = m.replace(/src=["']/i, '').replace(/["']$/, '');
+      if (url && !url.includes('favicon') && !url.includes('logo') && !url.includes('icon') && url.length > 5) {
+        realImages.push(url.startsWith('http') ? url : '');
+      }
+    });
+  }
 
-  const mapsEmbed = mapsUrl && mapsUrl.includes('google')
+  // Parse services text into cards
+  const serviceCards = [];
+  if (rawServices && rawServices.length > 5) {
+    const parts = rawServices.split(/[,;•\n]+/).filter(s => s.trim().length > 3).slice(0, 6);
+    const icons = ['⭐','🔧','📋','🎯','💼','🏆','📊','🛠️','📝','🚀'];
+    parts.forEach((s, i) => {
+      serviceCards.push({ icon: icons[i % icons.length], title: s.trim().substring(0, 40), desc: s.trim() });
+    });
+  }
+  if (serviceCards.length === 0) {
+    serviceCards.push(
+      { icon: '⭐', title: 'Quality Service', desc: `${bizName} delivers professional service with attention to every detail.` },
+      { icon: '🤝', title: 'Customer Focus', desc: 'Your satisfaction is our priority. We listen to your needs and deliver.' },
+      { icon: '🏆', title: 'Trusted & Reliable', desc: 'Building lasting relationships through consistent excellence and trust.' }
+    );
+  }
+
+  // Generate stats from real data
+  const statItems = [
+    { num: reviewCount || '100+', label: 'Happy Customers' },
+    { num: rating ? rating + '/5' : '4.8', label: 'Google Rating' },
+    { num: '10+', label: 'Years Experience' },
+    { num: '24/7', label: 'Available' }
+  ];
+
+  // Use real images for gallery, fallback to gradient placeholders
+  const galleryItems = realImages.length > 0
+    ? realImages.slice(0, 4).map((img, i) => ({ img, label: ['Our Work', 'Quality', 'Experience', 'Results'][i] }))
+    : [
+        { img: '', label: 'Our Workspace' },
+        { img: '', label: 'What We Do' },
+        { img: '', label: 'Our Process' },
+        { img: '', label: 'Results' }
+      ];
+
+  // Generate testimonial text using REAL business name
+  const testimonialItems = [
+    { name: 'Satisfied Client', role: 'Customer', quote: `${bizName} provides excellent service. I highly recommend them to anyone looking for quality and professionalism.` },
+    { name: 'Happy Customer', role: 'Regular Client', quote: `Great experience with ${bizName}. They understand their customers and always deliver beyond expectations.` },
+    { name: 'Valued Partner', role: 'Business Partner', quote: `Working with ${bizName} has been a pleasure. Professional, reliable, and always responsive to our needs.` }
+  ];
+
+  const tagline = `Welcome to ${bizName}`;
+  const aboutText = description || `${bizName} is dedicated to providing exceptional service. With a focus on quality, reliability, and customer satisfaction, we strive to exceed expectations in everything we do.`;
+  const heroImg = realImages[0] || '';
+  const ctaText = `Get in Touch with ${bizName}`;
+  const accentColor = '#10B981';
+  const accentGradient = 'linear-gradient(135deg,#10B981,#059669)';
+
+  const mapsEmbed = mapsUrl
     ? `<iframe src="${mapsUrl}" width="100%" height="350" style="border:0;border-radius:16px" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
     : '';
 
@@ -2726,35 +2280,42 @@ function generateDemoWebsite(bizName, websiteData, googleData, socialData, indus
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--primary:#0B1D3A;--accent:${accentColor};--accent-gradient:${accentGradient};--light:#f8fafc;--border:#e2e8f0;--text:#1a1a2e;--muted:#64748b;--radius:16px}
-body{font-family:'Plus Jakarta Sans','Manrope',sans-serif;color:var(--text);background:#fff;line-height:1.7;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans','Manrope',sans-serif;color:var(--text);background:#fff;line-height:1.7;overflow-x:hidden;-webkit-text-size-adjust:100%}
 img{max-width:100%;display:block}
 
 /* NAV */
-.nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;transition:all .3s}
-.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
-.nav-logo{font-size:22px;font-weight:800;color:var(--primary);text-decoration:none}
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px;transition:all .3s}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+.nav-logo{font-size:20px;font-weight:800;color:var(--primary);text-decoration:none}
 .nav-logo span{color:var(--accent)}
-.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links{display:flex;gap:24px;align-items:center}
 .nav-links a{text-decoration:none;color:var(--muted);font-weight:600;font-size:14px;transition:color .2s}
 .nav-links a:hover{color:var(--accent)}
 .nav-cta{background:var(--accent);color:#fff!important;padding:10px 24px;border-radius:30px;font-weight:700!important;transition:transform .2s,box-shadow .2s}
 .nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{display:block;width:24px;height:2px;background:var(--primary);margin:6px 0;transition:all .3s}
+.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);padding:16px;flex-direction:column;gap:12px;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.mobile-menu.active{display:flex}
+.mobile-menu a{text-decoration:none;color:var(--text);font-weight:600;font-size:16px;padding:12px 0;border-bottom:1px solid var(--border)}
+.mobile-menu a:last-child{border:none}
+.mobile-menu .mob-cta{background:var(--accent);color:#fff;text-align:center;padding:14px;border-radius:30px;border:none;margin-top:8px}
 
 /* HERO */
-.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:120px 24px 80px;background:var(--primary)}
-.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(11,29,58,.92),rgba(11,29,58,.7)),url('${heroImg}') center/cover no-repeat}
-.hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
-.hero-text{color:#fff}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:8px 20px;border-radius:30px;font-size:13px;font-weight:600;margin-bottom:24px;backdrop-filter:blur(10px)}
-.hero h1{font-size:clamp(36px,5vw,60px);font-weight:800;line-height:1.1;margin-bottom:20px}
+.hero{min-height:100vh;min-height:100dvh;display:flex;align-items:center;position:relative;overflow:hidden;padding:80px 16px 60px;background:var(--primary)}
+.hero::before{content:'';position:absolute;inset:0;background:${heroImg ? `linear-gradient(135deg,rgba(11,29,58,.88),rgba(11,29,58,.65)),url('${heroImg}') center/cover no-repeat` : 'linear-gradient(135deg,#0B1D3A 0%,#132D5E 50%,#1a4a8a 100%)'};z-index:1}
+.hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:40px;align-items:center}
+.hero-text{color:#fff;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:8px 16px;border-radius:30px;font-size:12px;font-weight:600;margin-bottom:20px;backdrop-filter:blur(10px)}
+.hero h1{font-size:clamp(28px,7vw,56px);font-weight:800;line-height:1.1;margin-bottom:16px}
 .hero h1 .highlight{background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero p{font-size:18px;color:rgba(255,255,255,.75);max-width:520px;margin-bottom:36px;line-height:1.8}
-.hero-btns{display:flex;gap:14px;flex-wrap:wrap}
-.btn-primary{background:var(--accent);color:#fff;padding:16px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;display:inline-flex;align-items:center;gap:10px;transition:all .3s;border:2px solid var(--accent)}
-.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
-.btn-outline{background:transparent;color:#fff;padding:16px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;border:2px solid rgba(255,255,255,.3);display:inline-flex;align-items:center;gap:10px;transition:all .3s}
+.hero p{font-size:clamp(15px,2.5vw,18px);color:rgba(255,255,255,.75);max-width:600px;margin:0 auto 28px;line-height:1.7}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn-primary{background:var(--accent);color:#fff;padding:14px 28px;border-radius:30px;text-decoration:none;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:8px;transition:all .3s;border:2px solid var(--accent)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.btn-outline{background:transparent;color:#fff;padding:14px 28px;border-radius:30px;text-decoration:none;font-weight:700;font-size:15px;border:2px solid rgba(255,255,255,.3);display:inline-flex;align-items:center;gap:8px;transition:all .3s}
 .btn-outline:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.5)}
-.hero-visual{position:relative}
+.hero-visual{display:none}
 .hero-card{background:rgba(255,255,255,.08);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:40px;color:#fff;text-align:center}
 .hero-card .rating{font-size:48px;font-weight:800;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero-card .stars{color:#fbbf24;font-size:24px;margin:8px 0}
@@ -2762,125 +2323,136 @@ img{max-width:100%;display:block}
 .hero-card .verified{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;color:#10b981;margin-top:16px}
 
 /* STATS */
-.stats-bar{background:var(--light);padding:48px 24px;border-bottom:1px solid var(--border)}
-.stats-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
-.stat-item .stat-number{font-size:36px;font-weight:800;color:var(--accent)}
-.stat-item .stat-label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.stats-bar{background:var(--light);padding:40px 16px;border-bottom:1px solid var(--border)}
+.stats-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(2,1fr);gap:24px;text-align:center}
+.stat-item .stat-number{font-size:clamp(28px,5vw,36px);font-weight:800;color:var(--accent)}
+.stat-item .stat-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
 
 /* SECTIONS */
-.section{padding:100px 24px}
+.section{padding:60px 16px}
 .section-dark{background:var(--primary);color:#fff}
 .section-alt{background:var(--light)}
-.section-header{text-align:center;max-width:700px;margin:0 auto 64px}
-.section-header .overline{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:12px}
-.section-header h2{font-size:clamp(28px,4vw,44px);font-weight:800;color:var(--primary);line-height:1.2;margin-bottom:16px}
+.section-header{text-align:center;max-width:700px;margin:0 auto 40px}
+.section-header .overline{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:8px}
+.section-header h2{font-size:clamp(24px,5vw,40px);font-weight:800;color:var(--primary);line-height:1.2;margin-bottom:12px}
 .section-dark .section-header h2{color:#fff}
-.section-header p{font-size:17px;color:var(--muted);line-height:1.8}
+.section-header p{font-size:15px;color:var(--muted);line-height:1.7}
 
 /* SERVICE CARDS */
-.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1200px;margin:0 auto}
-.service-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:36px;transition:all .4s;position:relative;overflow:hidden}
-.service-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent-gradient);transform:scaleX(0);transition:transform .4s}
+.services-grid{display:grid;grid-template-columns:1fr;gap:16px;max-width:1200px;margin:0 auto}
+.service-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:all .4s;position:relative;overflow:hidden}
+.service-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-gradient);transform:scaleX(0);transition:transform .4s}
 .service-card:hover::before{transform:scaleX(1)}
-.service-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(0,0,0,.08);border-color:transparent}
-.service-card .icon-wrap{width:56px;height:56px;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.04));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px}
-.service-card h3{font-size:20px;font-weight:700;color:var(--primary);margin-bottom:10px}
-.service-card p{font-size:15px;color:var(--muted);line-height:1.7}
+.service-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.06);border-color:transparent}
+.service-card .icon-wrap{width:48px;height:48px;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.04));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+.service-card h3{font-size:17px;font-weight:700;color:var(--primary);margin-bottom:8px}
+.service-card p{font-size:14px;color:var(--muted);line-height:1.6}
 
 /* ABOUT */
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;max-width:1200px;margin:0 auto}
-.about-img{border-radius:24px;overflow:hidden;position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,var(--primary),#1a4a8a)}
+.about-grid{display:grid;grid-template-columns:1fr;gap:32px;align-items:center;max-width:1200px;margin:0 auto}
+.about-img{border-radius:var(--radius);overflow:hidden;position:relative;aspect-ratio:16/10;background:linear-gradient(135deg,var(--primary),#1a4a8a)}
 .about-img img{width:100%;height:100%;object-fit:cover}
-.about-text h2{font-size:36px;font-weight:800;margin-bottom:20px;line-height:1.2}
-.about-text p{font-size:16px;color:var(--muted);margin-bottom:16px;line-height:1.8}
-.about-checks{list-style:none;margin-top:24px}
-.about-checks li{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:15px;font-weight:500}
-.about-checks li::before{content:'✓';width:28px;height:28px;background:rgba(16,185,129,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;font-size:14px;flex-shrink:0}
+.about-text h2{font-size:clamp(24px,5vw,32px);font-weight:800;margin-bottom:16px;line-height:1.2}
+.about-text p{font-size:15px;color:var(--muted);margin-bottom:12px;line-height:1.7}
+.about-checks{list-style:none;margin-top:20px}
+.about-checks li{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;font-weight:500}
+.about-checks li::before{content:'✓';width:26px;height:26px;background:rgba(16,185,129,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;font-size:13px;flex-shrink:0}
 
 /* GALLERY */
-.gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:1200px;margin:0 auto}
-.gallery-item{border-radius:var(--radius);overflow:hidden;position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#0B1D3A,#1a4a8a)}
+.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:1200px;margin:0 auto}
+.gallery-item{border-radius:var(--radius);overflow:hidden;position:relative;aspect-ratio:1;background:linear-gradient(135deg,#0B1D3A,#1a4a8a)}
 .gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
-.gallery-item:hover img{transform:scale(1.08)}
-.gallery-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(11,29,58,.8),transparent);display:flex;align-items:flex-end;padding:24px;opacity:0;transition:opacity .3s}
+.gallery-item:hover img{transform:scale(1.05)}
+.gallery-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(11,29,58,.8),transparent);display:flex;align-items:flex-end;padding:16px;opacity:0;transition:opacity .3s}
 .gallery-item:hover .gallery-overlay{opacity:1}
-.gallery-overlay span{color:#fff;font-weight:700;font-size:16px}
+.gallery-overlay span{color:#fff;font-weight:700;font-size:14px}
 
 /* TESTIMONIALS */
-.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px;max-width:1200px;margin:0 auto}
-.testimonial-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:36px;backdrop-filter:blur(10px)}
-.testimonial-card .stars{color:#fbbf24;font-size:18px;margin-bottom:16px}
-.testimonial-card .quote{font-size:16px;line-height:1.8;color:rgba(255,255,255,.8);margin-bottom:20px;font-style:italic}
+.testimonials-grid{display:grid;grid-template-columns:1fr;gap:16px;max-width:1200px;margin:0 auto}
+.testimonial-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:28px;backdrop-filter:blur(10px)}
+.testimonial-card .stars{color:#fbbf24;font-size:16px;margin-bottom:12px}
+.testimonial-card .quote{font-size:15px;line-height:1.7;color:rgba(255,255,255,.8);margin-bottom:16px;font-style:italic}
 .testimonial-card .author{display:flex;align-items:center;gap:12px}
-.testimonial-card .avatar{width:44px;height:44px;border-radius:50%;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
-.testimonial-card .name{font-weight:700;font-size:15px}
-.testimonial-card .role{font-size:13px;color:rgba(255,255,255,.5)}
+.testimonial-card .avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;flex-shrink:0}
+.testimonial-card .name{font-weight:700;font-size:14px}
+.testimonial-card .role{font-size:12px;color:rgba(255,255,255,.5)}
 
 /* CTA */
-.cta-section{padding:100px 24px;background:var(--accent-gradient);text-align:center;color:#fff;position:relative;overflow:hidden}
-.cta-section::before{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;background:rgba(255,255,255,.05);border-radius:50%}
-.cta-section::after{content:'';position:absolute;bottom:-30%;left:-10%;width:400px;height:400px;background:rgba(255,255,255,.05);border-radius:50%}
-.cta-content{position:relative;z-index:2;max-width:700px;margin:0 auto}
-.cta-content h2{font-size:clamp(28px,4vw,44px);font-weight:800;margin-bottom:16px}
-.cta-content p{font-size:18px;opacity:.85;margin-bottom:36px;line-height:1.7}
-.cta-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.btn-white{background:#fff;color:var(--primary);padding:16px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;display:inline-flex;align-items:center;gap:10px;transition:all .3s;border:2px solid #fff}
-.btn-white:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
-.btn-ghost{background:transparent;color:#fff;padding:16px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;border:2px solid rgba(255,255,255,.4);display:inline-flex;align-items:center;gap:10px;transition:all .3s}
+.cta-section{padding:60px 16px;background:var(--accent-gradient);text-align:center;color:#fff;position:relative;overflow:hidden}
+.cta-section::before{content:'';position:absolute;top:-50%;right:-20%;width:400px;height:400px;background:rgba(255,255,255,.05);border-radius:50%}
+.cta-content{position:relative;z-index:2;max-width:600px;margin:0 auto}
+.cta-content h2{font-size:clamp(24px,5vw,38px);font-weight:800;margin-bottom:12px}
+.cta-content p{font-size:16px;opacity:.85;margin-bottom:28px;line-height:1.6}
+.cta-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-white{background:#fff;color:var(--primary);padding:14px 28px;border-radius:30px;text-decoration:none;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:8px;transition:all .3s;border:2px solid #fff}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.btn-ghost{background:transparent;color:#fff;padding:14px 28px;border-radius:30px;text-decoration:none;font-weight:700;font-size:15px;border:2px solid rgba(255,255,255,.4);display:inline-flex;align-items:center;gap:8px;transition:all .3s}
 .btn-ghost:hover{background:rgba(255,255,255,.15);border-color:#fff}
 
 /* CONTACT */
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1000px;margin:0 auto}
-.contact-cards{display:flex;flex-direction:column;gap:16px}
-.contact-card{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;transition:all .3s;text-decoration:none;color:inherit}
-.contact-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.06);transform:translateY(-2px)}
-.contact-card .cc-icon{width:48px;height:48px;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(16,185,129,.04));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.contact-card .cc-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.contact-card .cc-value{font-weight:700;font-size:15px;color:var(--primary);margin-top:2px}
+.contact-grid{display:grid;grid-template-columns:1fr;gap:32px;max-width:1000px;margin:0 auto}
+.contact-cards{display:flex;flex-direction:column;gap:12px}
+.contact-card{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;transition:all .3s;text-decoration:none;color:inherit}
+.contact-card:hover{border-color:var(--accent);box-shadow:0 6px 20px rgba(0,0,0,.06);transform:translateY(-2px)}
+.contact-card .cc-icon{width:44px;height:44px;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(16,185,129,.04));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.contact-card .cc-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.contact-card .cc-value{font-weight:700;font-size:14px;color:var(--primary);margin-top:2px;word-break:break-all}
 
 /* MAP */
-.map-wrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:var(--light)}
+.map-wrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:var(--light);min-height:250px}
 
 /* FOOTER */
-footer{background:var(--primary);color:rgba(255,255,255,.5);padding:32px 24px;text-align:center;font-size:13px}
+footer{background:var(--primary);color:rgba(255,255,255,.5);padding:24px 16px;text-align:center;font-size:12px}
 footer a{color:var(--accent);text-decoration:none}
-.footer-links{display:flex;justify-content:center;gap:24px;margin-bottom:12px;flex-wrap:wrap}
-.footer-links a{color:rgba(255,255,255,.6);text-decoration:none;font-weight:500;transition:color .2s}
+.footer-links{display:flex;justify-content:center;gap:16px;margin-bottom:8px;flex-wrap:wrap}
+.footer-links a{color:rgba(255,255,255,.6);text-decoration:none;font-weight:500;transition:color .2s;font-size:12px}
 .footer-links a:hover{color:var(--accent)}
 
 /* BADGE */
-.badge{position:fixed;bottom:20px;right:20px;background:var(--primary);color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:700;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px}
+.badge{position:fixed;bottom:16px;right:16px;background:var(--primary);color:#fff;padding:8px 16px;border-radius:20px;font-size:11px;font-weight:700;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;align-items:center;gap:6px}
 .badge span{color:var(--accent)}
 
 /* WHATSAPP FLOAT */
-.wa-float{position:fixed;bottom:80px;left:20px;z-index:999;background:#25D366;color:#fff;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;text-decoration:none;box-shadow:0 6px 20px rgba(37,211,102,.4);transition:transform .3s}
+.wa-float{position:fixed;bottom:60px;left:16px;z-index:999;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;text-decoration:none;box-shadow:0 4px 16px rgba(37,211,102,.4);transition:transform .3s}
 .wa-float:hover{transform:scale(1.1)}
 
-/* RESPONSIVE */
-@media(max-width:900px){
-  .hero-content{grid-template-columns:1fr;text-align:center}
-  .hero p{margin-left:auto;margin-right:auto}
-  .hero-btns{justify-content:center}
-  .hero-visual{display:none}
-  .stats-inner{grid-template-columns:repeat(2,1fr)}
-  .about-grid{grid-template-columns:1fr}
-  .contact-grid{grid-template-columns:1fr}
-  .nav-links{display:none}
+/* RESPONSIVE — TABLET */
+@media(min-width:640px){
+  .hero-content{grid-template-columns:1fr 1fr;text-align:left}
+  .hero p{margin:0 0 28px}
+  .hero-btns{justify-content:flex-start}
+  .hero-visual{display:block}
+  .stats-inner{grid-template-columns:repeat(4,1fr)}
+  .about-grid{grid-template-columns:1fr 1fr}
+  .services-grid{grid-template-columns:repeat(2,1fr)}
+  .testimonials-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-grid{grid-template-columns:repeat(2,1fr)}
+  .contact-grid{grid-template-columns:1fr 1fr}
 }
-@media(max-width:640px){
-  .hero{padding:100px 16px 60px}
-  .section{padding:60px 16px}
-  .services-grid{grid-template-columns:1fr}
-  .testimonials-grid{grid-template-columns:1fr}
-  .gallery-grid{grid-template-columns:1fr}
-  .cta-section{padding:60px 16px}
-  .stats-inner{grid-template-columns:1fr 1fr;gap:20px}
+/* RESPONSIVE — DESKTOP */
+@media(min-width:900px){
+  .nav{padding:0 24px}
+  .nav-inner{height:72px}
+  .nav-links{display:flex}
+  .hamburger{display:none}
+  .hero{padding:120px 24px 80px}
+  .hero h1{font-size:clamp(36px,5vw,60px)}
+  .section{padding:80px 24px}
+  .services-grid{grid-template-columns:repeat(3,1fr)}
+  .testimonials-grid{grid-template-columns:repeat(3,1fr)}
+  .gallery-grid{grid-template-columns:repeat(4,1fr)}
+}
+/* MOBILE HAMBURGER */
+@media(max-width:639px){
+  .hamburger{display:block}
+  .nav-links{display:none}
+  .hero{min-height:auto;padding:80px 16px 48px}
 }
 
 /* ANIMATIONS */
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-.hero-text,.hero-card{animation:fadeUp .8s ease-out both}
-.hero-card{animation-delay:.2s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero-text,.hero-card{animation:fadeUp .6s ease-out both}
+.hero-card{animation-delay:.15s}
 </style>
 </head>
 <body>
@@ -2892,25 +2464,35 @@ footer a{color:var(--accent);text-decoration:none}
     <div class="nav-links">
       <a href="#about">About</a>
       <a href="#services">Services</a>
-      <a href="#gallery">Gallery</a>
+      ${galleryItems.some(g => g.img) ? '<a href="#gallery">Gallery</a>' : ''}
       <a href="#testimonials">Reviews</a>
       <a href="#contact">Contact</a>
       ${waNumber ? `<a href="${waLink}" class="nav-cta" target="_blank">Get a Quote</a>` : ''}
     </div>
+    <button class="hamburger" onclick="document.getElementById('mobMenu').classList.toggle('active')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+<div id="mobMenu" class="mobile-menu">
+  <a href="#about" onclick="this.parentElement.classList.remove('active')">About</a>
+  <a href="#services" onclick="this.parentElement.classList.remove('active')">Services</a>
+  <a href="#testimonials" onclick="this.parentElement.classList.remove('active')">Reviews</a>
+  <a href="#contact" onclick="this.parentElement.classList.remove('active')">Contact</a>
+  ${waNumber ? `<a href="${waLink}" class="mob-cta" target="_blank">💬 Chat on WhatsApp</a>` : ''}
+</div>
 
 <!-- HERO -->
 <section class="hero">
   <div class="hero-content">
     <div class="hero-text">
-      <div class="hero-badge">⭐ Trusted by ${reviewCount || '100+'} Happy Customers</div>
+      ${rating ? `<div class="hero-badge">⭐ Rated ${rating}/5 on Google${reviewCount ? ' (' + reviewCount + ' reviews)' : ''}</div>` : `<div class="hero-badge">⭐ Trusted by Our Customers</div>`}
       <h1>${tagline.split(' ').map((w,i) => i === Math.floor(tagline.split(' ').length/2) ? `<span class="highlight">${w}</span>` : w).join(' ')}</h1>
       <p>${aboutText}</p>
       <div class="hero-btns">
         ${waNumber ? `<a href="${waLink}" class="btn-primary" target="_blank">💬 WhatsApp Us</a>` : ''}
-        ${phone ? `<a href="${telLink}" class="btn-outline">📞 Call ${phone}</a>` : ''}
-        <a href="#services" class="btn-outline" style="border-color:rgba(255,255,255,.2)">Explore Services ↓</a>
+        ${phone ? `<a href="${telLink}" class="btn-outline">📞 ${phone}</a>` : ''}
+        <a href="#services" class="btn-outline" style="border-color:rgba(255,255,255,.2)">Our Services ↓</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -2934,21 +2516,19 @@ footer a{color:var(--accent);text-decoration:none}
 <!-- ABOUT -->
 <section id="about" class="section">
   <div class="about-grid">
-    <div class="about-img">
-      <img src="${heroImg}" alt="${bizName}" onerror="this.style.display='none'">
-    </div>
+    ${heroImg ? `<div class="about-img"><img src="${heroImg}" alt="${bizName}" onerror="this.parentElement.style.display='none'"></div>` : ''}
     <div class="about-text">
       <div class="section-header" style="text-align:left;margin:0">
         <div class="overline">About Us</div>
-        <h2>We Are ${bizName}</h2>
+        <h2>${bizName}</h2>
       </div>
       <p>${aboutText}</p>
-      <p>With years of experience serving the community, we pride ourselves on delivering exceptional results that exceed expectations. Our team is dedicated to providing personalized service tailored to your specific needs.</p>
+      ${address ? `<p>📍 ${address}</p>` : ''}
       <ul class="about-checks">
-        <li>Professional & Licensed Team</li>
+        <li>Professional & Dedicated Team</li>
         <li>Customer Satisfaction Guaranteed</li>
-        <li>Fast & Reliable Service</li>
-        <li>Competitive Pricing</li>
+        ${phone ? `<li>Call Us: ${phone}</li>` : ''}
+        ${email ? `<li>Email: ${email}</li>` : ''}
       </ul>
     </div>
   </div>
@@ -2959,7 +2539,7 @@ footer a{color:var(--accent);text-decoration:none}
   <div class="section-header">
     <div class="overline">What We Offer</div>
     <h2>Our Services</h2>
-    <p>Discover the range of professional services we provide to help you achieve your goals.</p>
+    <p>Discover the range of services we provide to help you achieve your goals.</p>
   </div>
   <div class="services-grid">
     ${serviceCards.map(s => `
@@ -2972,6 +2552,7 @@ footer a{color:var(--accent);text-decoration:none}
   </div>
 </section>
 
+${galleryItems.some(g => g.img) ? `
 <!-- GALLERY -->
 <section id="gallery" class="section">
   <div class="section-header">
@@ -2980,21 +2561,22 @@ footer a{color:var(--accent);text-decoration:none}
     <p>A glimpse into what we do and the quality we deliver.</p>
   </div>
   <div class="gallery-grid">
-    ${galleryItems.map(g => `
+    ${galleryItems.filter(g => g.img).map(g => `
       <div class="gallery-item">
-        <img src="${g.img}" alt="${g.label}" onerror="this.parentElement.style.background='linear-gradient(135deg,#0B1D3A,#1a4a8a)';this.style.display='none'">
+        <img src="${g.img}" alt="${g.label}" loading="lazy" onerror="this.parentElement.style.display='none'">
         <div class="gallery-overlay"><span>${g.label}</span></div>
       </div>
     `).join('')}
   </div>
 </section>
+` : ''}
 
 <!-- TESTIMONIALS -->
 <section id="testimonials" class="section section-dark">
   <div class="section-header">
     <div class="overline" style="color:var(--accent)">Testimonials</div>
     <h2>What Our Clients Say</h2>
-    <p>Don't just take our word for it — hear from our satisfied customers.</p>
+    <p>Hear from our satisfied customers.</p>
   </div>
   <div class="testimonials-grid">
     ${testimonialItems.map(t => `
@@ -3017,7 +2599,7 @@ footer a{color:var(--accent);text-decoration:none}
 <section class="cta-section">
   <div class="cta-content">
     <h2>${ctaText}</h2>
-    <p>Ready to experience the difference? Contact us today and let's discuss how we can help you achieve your goals.</p>
+    <p>Ready to experience the difference? Contact us today and let's discuss how we can help you.</p>
     <div class="cta-buttons">
       ${waNumber ? `<a href="${waLink}" class="btn-white" target="_blank">💬 Chat on WhatsApp</a>` : ''}
       ${phone ? `<a href="${telLink}" class="btn-ghost">📞 Call Now — ${phone}</a>` : ''}
@@ -3030,7 +2612,7 @@ footer a{color:var(--accent);text-decoration:none}
   <div class="section-header">
     <div class="overline">Get in Touch</div>
     <h2>Contact Us</h2>
-    <p>We'd love to hear from you. Reach out anytime.</p>
+    <p>We'd love to hear from you.</p>
   </div>
   <div class="contact-grid">
     <div class="contact-cards">
@@ -3040,7 +2622,7 @@ footer a{color:var(--accent);text-decoration:none}
       ${address ? `<div class="contact-card"><div class="cc-icon">📍</div><div><div class="cc-label">Address</div><div class="cc-value">${address}</div></div></div>` : ''}
     </div>
     <div class="map-wrap">
-      ${mapsEmbed || `<div style="height:100%;min-height:300px;background:linear-gradient(135deg,#0B1D3A,#1a4a8a);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:14px;border-radius:16px">📍 Map placeholder</div>`}
+      ${mapsEmbed || `<div style="height:100%;min-height:250px;background:linear-gradient(135deg,#0B1D3A,#1a4a8a);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:14px;border-radius:16px">📍 Map</div>`}
     </div>
   </div>
 </section>
@@ -3050,18 +2632,14 @@ footer a{color:var(--accent);text-decoration:none}
   <div class="footer-links">
     <a href="#about">About</a>
     <a href="#services">Services</a>
-    <a href="#gallery">Gallery</a>
     <a href="#testimonials">Reviews</a>
     <a href="#contact">Contact</a>
   </div>
   <p>&copy; 2026 ${bizName}. All rights reserved.</p>
-  <p style="margin-top:8px">Concept by <a href="https://jahzwin19.github.io/jfx-audit/" target="_blank">JFX Digital Global Tech</a></p>
+  <p style="margin-top:6px">Concept by <a href="https://jahzwin19.github.io/jfx-audit/" target="_blank">JFX Digital Global Tech</a></p>
 </footer>
 
-<!-- WHATSAPP FLOAT -->
 ${waNumber ? `<a href="${waLink}" class="wa-float" target="_blank" title="Chat on WhatsApp">💬</a>` : ''}
-
-<!-- JFX BADGE -->
 <div class="badge">⚡ Concept by <span>JFX Digital</span></div>
 
 </body>
@@ -3327,6 +2905,17 @@ Provide a JSON response with these exact fields:
 
     showAIProgress(100, 'Complete!');
     setTimeout(() => hideAIProgress(), 1500);
+
+    // Track this audit
+    fetch('/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bizName: bizName,
+        industry: document.getElementById('fIndustry')?.value || '',
+        websiteUrl: websiteUrl
+      })
+    }).catch(() => {});
 
   } catch(e) {
     showAIStatus('Error: ' + e.message, 'error');
