@@ -286,14 +286,75 @@ body{font-family:'Plus Jakarta Sans','Manrope',system-ui,-apple-system,sans-seri
   .checklist{grid-template-columns:1fr}
   .score-hero{flex-direction:column;align-items:center;text-align:center}
   .score-categories{grid-template-columns:1fr}
-  .hero-banner{padding:28px 20px}
-  .hero-banner h1{font-size:22px}
-  .meta-grid{grid-template-columns:1fr 1fr}
-  .cta-section h2{font-size:22px}
+  .hero-banner{padding:20px 16px}
+  .hero-banner h1{font-size:20px}
+  .meta-grid{grid-template-columns:1fr}
+  .cta-section h2{font-size:20px}
   .demo-grid{grid-template-columns:1fr}
   .rec-phase{flex-direction:column;align-items:flex-start}
   .nav-actions{gap:4px}
   .btn{padding:6px 10px;font-size:11px}
+  .top-nav{padding:0 12px}
+  .top-nav .logo span{display:none}
+  .section{padding:16px 12px}
+  .section h3{font-size:16px}
+  .section-title{font-size:18px}
+  .field-group{margin-bottom:12px}
+  .field-group label{font-size:12px}
+  .field-group input,.field-group textarea,.field-group select{padding:10px 12px;font-size:14px}
+  textarea{min-height:60px!important}
+  .checklist-item{padding:10px 12px}
+  .checklist-item .item-label{font-size:13px}
+  .audit-row{flex-direction:column;gap:6px;padding:10px 12px}
+  .audit-check{align-self:flex-start}
+  .score-ring svg{width:120px;height:120px}
+  .score-num{font-size:32px}
+  .status-badge{font-size:11px;padding:4px 10px}
+  .gauge-container{height:8px}
+  .phase-card{padding:16px}
+  .rec-phase .num{width:32px;height:32px;font-size:14px}
+  .rec-phase .text h4{font-size:14px}
+  .rec-phase .text p{font-size:13px}
+  .top-opportunity{padding:16px}
+  .top-opportunity h4{font-size:14px}
+  .top-opportunity p{font-size:13px}
+  .potential-card{padding:20px 16px}
+  .potential-card h3{font-size:18px}
+  .concept-card{padding:16px}
+  .concept-card .concept-title{font-size:15px}
+  .concept-card .concept-url{font-size:12px}
+  .result-section{padding:16px 12px}
+  .modal-content{width:95%;max-height:90vh;padding:20px 16px}
+  .modal-header h2{font-size:18px}
+  .provider-card{padding:12px}
+  .provider-card .prov-name{font-size:13px}
+  .provider-card .prov-desc{font-size:11px}
+  .ai-progress{padding:12px}
+  .funnel-textarea{min-height:80px}
+  .top-prob textarea,.top-impact textarea,.top-sol textarea{min-height:50px}
+  .sales-field-grid{grid-template-columns:1fr}
+  .industry-tags{flex-wrap:wrap;gap:6px}
+  .industry-tag{font-size:11px;padding:4px 10px}
+  .no-data-badge{font-size:11px;padding:3px 8px}
+  .mobile-only{display:block}
+  .desktop-only{display:none}
+}
+@media(min-width:769px){
+  .mobile-only{display:none}
+  .desktop-only{display:block}
+}
+@media(max-width:480px){
+  .top-nav{height:50px}
+  .top-nav .logo img{height:28px}
+  .hero-banner{padding:16px 12px}
+  .hero-banner h1{font-size:18px}
+  .hero-banner .subtitle{font-size:12px}
+  .nav-actions .btn{padding:5px 8px;font-size:10px}
+  .section{padding:12px 8px}
+  .field-group{margin-bottom:8px}
+  .score-ring svg{width:100px;height:100px}
+  .score-num{font-size:28px}
+  .score-label{font-size:11px}
 }
 
 /* Animations */
@@ -1562,25 +1623,52 @@ function parseBingResults(html) {
 
 // Parse DuckDuckGo HTML results
 function parseDDGResults(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
   const results = [];
-  doc.querySelectorAll('.result, .web-result').forEach(el => {
-    const titleEl = el.querySelector('a.result__a, .result__title a');
-    const snippetEl = el.querySelector('.result__snippet');
-    if (titleEl) {
+  // Method 1: DOMParser
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('a.result__a').forEach(a => {
+      let link = a.href || '';
+      const uddg = link.match(/uddg=([^&]+)/);
+      if (uddg) link = decodeURIComponent(uddg[1]);
+      const snippetEl = a.closest('.result')?.querySelector('.result__snippet');
       results.push({
-        title: titleEl.textContent || '',
-        link: titleEl.href || '',
+        title: a.textContent || '',
+        link: link,
         snippet: snippetEl?.textContent || ''
       });
+    });
+  } catch(e) {}
+  // Method 2: Regex (handles XHTML and attribute ordering)
+  if (results.length === 0) {
+    const re = /class="result__a"[\s\S]*?href="([^"]*)"[\s\S]*?>([\s\S]*?)<\/a>/gi;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      let link = m[1] || '';
+      const uddg = link.match(/uddg=([^&]+)/);
+      if (uddg) link = decodeURIComponent(uddg[1]);
+      const title = m[2].replace(/<[^>]+>/g, '').trim();
+      if (title && title.length > 3) {
+        results.push({ title, link, snippet: '' });
+      }
     }
-  });
+  }
   return results.length > 0 ? results : null;
 }
 
-// Server-side search — tries Bing first (most reliable), then Google, then DuckDuckGo
+// Server-side search — tries DuckDuckGo first (most reliable for business data), then Bing, then Google
 async function searchGoogle(query) {
-  // 1. Try Bing via server (most reliable, no blocking)
+  // 1. Try DuckDuckGo via server (best for real business data)
+  try {
+    const resp = await fetch(`/search?q=${encodeURIComponent(query)}&engine=duckduckgo`);
+    if (resp.ok) {
+      const html = await resp.text();
+      const results = parseDDGResults(html);
+      if (results && results.length > 0) return results;
+    }
+  } catch(e) {}
+
+  // 2. Try Bing via server
   try {
     const resp = await fetch(`/search?q=${encodeURIComponent(query)}&engine=bing`);
     if (resp.ok) {
@@ -1590,7 +1678,7 @@ async function searchGoogle(query) {
     }
   } catch(e) {}
 
-  // 2. Try Google via server
+  // 3. Try Google via server
   try {
     const resp = await fetch(`/search?q=${encodeURIComponent(query)}&engine=google`);
     if (resp.ok) {
@@ -1604,16 +1692,6 @@ async function searchGoogle(query) {
         if (title && link) results.push({ title, link, snippet });
       });
       if (results.length > 0) return results;
-    }
-  } catch(e) {}
-
-  // 3. Try DuckDuckGo via server
-  try {
-    const resp = await fetch(`/search?q=${encodeURIComponent(query)}&engine=duckduckgo`);
-    if (resp.ok) {
-      const html = await resp.text();
-      const results = parseDDGResults(html);
-      if (results && results.length > 0) return results;
     }
   } catch(e) {}
 
@@ -1650,9 +1728,11 @@ async function checkGoogleMaps(businessName, location) {
   const allSnippetsExt = allResults.map(r => r.snippet + ' ' + r.title).join(' ');
 
   // Extract real data from search results
-  const addressMatch = allSnippetsExt.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
-    || allSnippetsExt.match(/(Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun|Ikeja|Lekki|Surulere|Yaba|Victoria Island|Ikoyi|Ajah|Ikorodu|Mushin|Oshodi|Isolo|Agege)[^.\n]{5,100}/i);
-  const phoneMatch = allSnippetsExt.match(/(\+?234[\s-]?\d{10}|\+?234[\s-]?\d{3}[\s-]?\d{4}[\s-]?\d{3}|0\d{10}|0\d{3}[\s-]?\d{3}[\s-]?\d{4})/);
+  const addressMatch = allSnippetsExt.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd|Quarter|Quater)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
+    || allSnippetsExt.match(/(OBIRE|Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun|Ikeja|Lekki|Surulere|Yaba|Victoria Island|Ikoyi|Ajah|Ikorodu|Mushin|Oshodi|Isolo|Agege|Ibadan|Enugu|Aba|Owerri|Onitsha|Nnewi|Aba|Calabar|Uyo|Aba|Ogoni|Yenagoa|Bayelsa|Kaduna|Kano|Jos|Minna|Lokoja|Abeokuta|Ogun|Ondo|Akure|Ado Ekiti|Osogbo|Oshogbo)[^.\n]{5,120}/i)
+    || allSnippetsExt.match(/(?:address|location|located at|situated at|find us at|visit us at|office at|headquarters at|based in|based at)[:\s]*([^\n.]{10,120})/i);
+  const phoneMatch = allSnippetsExt.match(/\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d/);
+  const phoneClean = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
   const reviewMatch = allSnippetsExt.match(/(\d+(?:\.\d+)?)\s*(?:star|rating|review|\/\s*5)/i)
     || allSnippetsExt.match(/(\d+(?:\.\d+)?)\s*\/\s*5/);
   const reviewCountMatch = allSnippetsExt.match(/(\d+)\s*(?:review|rating|google review)/i);
@@ -1672,7 +1752,7 @@ async function checkGoogleMaps(businessName, location) {
     rating: reviewMatch ? reviewMatch[1] : null,
     reviewCount: reviewCountMatch ? reviewCountMatch[1] : null,
     address: finalAddress,
-    phone: phoneMatch ? phoneMatch[0].trim() : null,
+    phone: phoneClean,
     category: categoryMatch ? categoryMatch[1].trim() : null,
     allSnippets: allSnippetsExt
   };
@@ -1684,22 +1764,31 @@ async function searchBusinessInfo(businessName, location) {
   const results = await searchGoogle(query);
   const allText = results ? results.map(r => r.snippet + ' ' + r.title).join(' ') : '';
 
-  // Also try a second search for email specifically
+  // Also try a second search for email specifically via DDG
   let emailText = '';
   try {
-    const emailResults = await searchGoogle(`${businessName} ${location || ''} email contact`);
+    const emailResults = await searchGoogle(`${businessName} email contact`);
     emailText = emailResults ? emailResults.map(r => r.snippet + ' ' + r.title).join(' ') : '';
   } catch(e) {}
 
-  const combinedText = allText + ' ' + emailText;
+  // Also try a third search for address/location
+  let addressText = '';
+  try {
+    const addrResults = await searchGoogle(`${businessName} ${location || ''} address location office`);
+    addressText = addrResults ? addrResults.map(r => r.snippet + ' ' + r.title).join(' ') : '';
+  } catch(e) {}
 
-  const phoneMatch = combinedText.match(/(\+?234[\s-]?\d{10}|\+?234[\s-]?\d{3}[\s-]?\d{4}[\s-]?\d{3}|0\d{10}|0\d{3}[\s-]?\d{3}[\s-]?\d{4})/);
+  const combinedText = allText + ' ' + emailText + ' ' + addressText;
+
+  const phoneMatch = combinedText.match(/\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d/);
+  const phoneClean = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
   const emailMatch = combinedText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  const addressMatch = combinedText.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
-    || combinedText.match(/(Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun|Ikeja|Lekki|Surulere|Yaba|Victoria Island|Ikoyi|Ajah)[^.\n]{5,100}/i);
+  const addressMatch = combinedText.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd|Quarter|Quater)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
+    || combinedText.match(/(OBIRE|Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun|Ikeja|Lekki|Surulere|Yaba|Victoria Island|Ikoyi|Ajah|Ikorodu|Mushin|Oshodi|Isolo|Agege|Ibadan|Enugu|Aba|Owerri|Onitsha|Nnewi|Calabar|Uyo|Kaduna|Kano|Jos|Minna|Abeokuta|Akure|Ado Ekiti|Osogbo)[^.\n]{5,120}/i)
+    || combinedText.match(/(?:address|location|located at|situated at|find us at|visit us at|office at|based in|based at)[:\s]*([^\n.]{10,120})/i);
 
   return {
-    phone: phoneMatch ? phoneMatch[0].trim() : null,
+    phone: phoneClean,
     email: emailMatch ? emailMatch[0] : null,
     address: addressMatch ? addressMatch[1]?.trim() || addressMatch[0]?.trim() : null,
     allText: combinedText
@@ -1710,7 +1799,7 @@ async function searchBusinessInfo(businessName, location) {
 async function checkSocialPresence(businessName) {
   const platforms = { facebook: null, instagram: null, tiktok: null };
 
-  // Search for all social media at once via Bing (more reliable)
+  // Search for all social media at once via DDG (most reliable)
   const results = await searchGoogle(`"${businessName}" facebook instagram tiktok`);
   if (results) {
     const allText = results.map(r => r.snippet + ' ' + r.title + ' ' + r.link).join(' ');
@@ -1734,7 +1823,7 @@ async function checkSocialPresence(businessName) {
     }
   }
 
-  // If not found in combined search, try individual searches
+  // If not found in combined search, try individual DDG searches
   if (!platforms.facebook) {
     try {
       const fbResults = await searchGoogle(`"${businessName}" facebook page`);
@@ -1773,8 +1862,8 @@ function extractMeta(html, url) {
   const ogDesc = get('meta[property="og:description"]');
 
   // Extract phone numbers
-  const phoneMatch = bodyText.match(/(\+?234[\s-]?\d{10}|\+?234[\s-]?\d{3}[\s-]?\d{4}[\s-]?\d{3}|0\d{10}|0\d{3}[\s-]?\d{3}[\s-]?\d{4})/);
-  const phone = phoneMatch ? phoneMatch[0].trim() : null;
+  const phoneMatch = bodyText.match(/\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d/);
+  const phone = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
 
   // Extract email
   const emailMatch = bodyText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);

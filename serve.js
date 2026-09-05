@@ -218,11 +218,11 @@ http.createServer(async (req, res) => {
     try {
       let searchUrl;
       if (engine === 'google') {
-        searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en&num=10`;
+        searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en&gl=ng&num=10`;
       } else if (engine === 'duckduckgo') {
-        searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+        searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}&kl=ng-en`;
       } else {
-        searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}&count=10`;
+        searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}&count=10&setlang=en&cc=NG&mkt=en-NG`;
       }
       const html = await fetchUrl(searchUrl);
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
