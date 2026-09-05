@@ -838,6 +838,11 @@ body{font-family:'Plus Jakarta Sans','Manrope',system-ui,-apple-system,sans-seri
 
 <script>
 // ============================================================
+// API BASE — always points to the Node.js server for /proxy and /search
+// ============================================================
+const API_BASE = (location.port === '4040') ? '' : `http://${location.hostname}:4040`;
+
+// ============================================================
 // DATA
 // ============================================================
 const INDUSTRIES = ['Real Estate','Hotel & Hospitality','Event Centre','Auto Dealer','Restaurant','Lounge & Bar','Health & Medical','Legal Services','Education','Technology','Retail & Fashion','Beauty & Wellness','Construction','Logistics'];
@@ -1562,9 +1567,9 @@ async function fetchPage(url, timeout = 12000) {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeout);
-    const resp = await fetch(`/proxy?url=${encodeURIComponent(url)}`, { signal: ctrl.signal });
+    const resp = await fetch(`${API_BASE}/proxy?url=${encodeURIComponent(url)}`, { signal: ctrl.signal });
     clearTimeout(timer);
-    if (resp.ok) return await resp.text();
+    if (resp.ok) { console.log('[FETCH] Proxy success for', url.substring(0,60)); return await resp.text(); }
   } catch(e) {}
 
   // 2. Try direct fetch
@@ -1668,29 +1673,30 @@ function parseDDGResults(html) {
 
 // Server-side search — tries DuckDuckGo first (most reliable for business data), then Bing, then Google
 async function searchGoogle(query) {
+  console.log('[SEARCH] Query:', query);
   // 1. Try DuckDuckGo via server (best for real business data)
   try {
-    const resp = await fetch(`/search?q=${encodeURIComponent(query)}&engine=duckduckgo`);
+    const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=duckduckgo`);
     if (resp.ok) {
       const html = await resp.text();
       const results = parseDDGResults(html);
-      if (results && results.length > 0) return results;
+      if (results && results.length > 0) { console.log('[SEARCH] DDG:', results.length, 'results'); return results; }
     }
-  } catch(e) {}
+  } catch(e) { console.log('[SEARCH] DDG error:', e.message); }
 
   // 2. Try Bing via server
   try {
-    const resp = await fetch(`/search?q=${encodeURIComponent(query)}&engine=bing`);
+    const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=bing`);
     if (resp.ok) {
       const html = await resp.text();
       const results = parseBingResults(html);
-      if (results && results.length > 0) return results;
+      if (results && results.length > 0) { console.log('[SEARCH] Bing:', results.length, 'results'); return results; }
     }
-  } catch(e) {}
+  } catch(e) { console.log('[SEARCH] Bing error:', e.message); }
 
   // 3. Try Google via server
   try {
-    const resp = await fetch(`/search?q=${encodeURIComponent(query)}&engine=google`);
+    const resp = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&engine=google`);
     if (resp.ok) {
       const html = await resp.text();
       const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -1717,6 +1723,7 @@ async function searchGoogle(query) {
     const snippet = el.querySelector('[data-sncf], .VwiC3b, .st')?.textContent || '';
     if (title && link) results.push({ title, link, snippet });
   });
+  if (results.length > 0) console.log('[SEARCH] Google fallback:', results.length, 'results');
   return results.length > 0 ? results : null;
 }
 
@@ -1741,7 +1748,7 @@ async function checkGoogleMaps(businessName, location) {
   const addressMatch = allSnippetsExt.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd|Quarter|Quater)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
     || allSnippetsExt.match(/(OBIRE|Sapele|Warri|Benin|Lagos|Abuja|Port Harcourt|Asaba|Agbor|Ughelli|Effurun|Ikeja|Lekki|Surulere|Yaba|Victoria Island|Ikoyi|Ajah|Ikorodu|Mushin|Oshodi|Isolo|Agege|Ibadan|Enugu|Aba|Owerri|Onitsha|Nnewi|Aba|Calabar|Uyo|Aba|Ogoni|Yenagoa|Bayelsa|Kaduna|Kano|Jos|Minna|Lokoja|Abeokuta|Ogun|Ondo|Akure|Ado Ekiti|Osogbo|Oshogbo)[^.\n]{5,120}/i)
     || allSnippetsExt.match(/(?:address|location|located at|situated at|find us at|visit us at|office at|headquarters at|based in|based at)[:\s]*([^\n.]{10,120})/i);
-  const phoneMatch = allSnippetsExt.match(/\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d/);
+  const phoneMatch = allText.match(/(?:\+\d{1,3}[\s\-\(\)]*)?(?:\(?\d{2,4}\)?[\s\-\.\)]*\d{3,4}[\s\-\.\)]*\d{3,4}[\s\-\.\)]*\d{0,4})/);
   const phoneClean = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
   const reviewMatch = allSnippetsExt.match(/(\d+(?:\.\d+)?)\s*(?:star|rating|review|\/\s*5)/i)
     || allSnippetsExt.match(/(\d+(?:\.\d+)?)\s*\/\s*5/);
@@ -1790,7 +1797,7 @@ async function searchBusinessInfo(businessName, location) {
 
   const combinedText = allText + ' ' + emailText + ' ' + addressText;
 
-  const phoneMatch = combinedText.match(/\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d/);
+  const phoneMatch = combinedText.match(/(?:\+\d{1,3}[\s\-\(\)]*)?(?:\(?\d{2,4}\)?[\s\-.\)]*\d{3,4}[\s\-.\)]*\d{3,4}[\s\-.\)]*\d{0,4})/);
   const phoneClean = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
   const emailMatch = combinedText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   const addressMatch = combinedText.match(/(\d+\s+[A-Za-z\s]+(?:Street|Road|Avenue|Lane|Close|Way|Drive|Crescent|Ave|St|Rd|Quarter|Quater)[^,\n]*(?:,\s*[A-Za-z\s]+){0,3})/i)
@@ -1872,7 +1879,7 @@ function extractMeta(html, url) {
   const ogDesc = get('meta[property="og:description"]');
 
   // Extract phone numbers
-  const phoneMatch = bodyText.match(/\+?234[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d[\s\-\(\)]*\d/);
+  const phoneMatch = bodyText.match(/(?:\+\d{1,3}[\s\-\(\)]*)?(?:\(?\d{2,4}\)?[\s\-.\)]*\d{3,4}[\s\-.\)]*\d{3,4}[\s\-.\)]*\d{0,4})/);
   const phone = phoneMatch ? phoneMatch[0].replace(/[^0-9+]/g, '') : null;
 
   // Extract email
@@ -2022,9 +2029,9 @@ function analyzeAndFill(websiteData, googleData, socialData, bizName) {
     6: !!(googleData?.hasMapsListing && googleData?.rating),
     7: !!(googleData?.hasMapsListing),
     8: !!(googleData?.hasReviews || (googleData?.reviewCount && parseInt(googleData.reviewCount) > 0)),
-    9: false,
+    9: !!(googleData?.allSnippets && /response|replied|replied to|owner responded/i.test(googleData.allSnippets)),
     10: !!(googleData?.hasMapsListing && googleData?.mapsUrl),
-    11: false
+    11: !!(websiteData && (websiteData.htmlSnippet || '').match(/review|rating|testimonial|star/i))
   };
   Object.keys(gChecks).forEach(i => {
     state.googleChecks[i] = gChecks[i];
@@ -2097,14 +2104,14 @@ function analyzeAndFill(websiteData, googleData, socialData, bizName) {
   // ---- AD CHECKS — based on website readiness ----
   const aChecks = {
     0: !!(websiteData && websiteData.bodyLength > 500),
-    1: false,
+    1: !!((websiteData?.htmlSnippet || '').match(/gtag|fbq|pixel|analytics|gtm|google.*tag|conversion/i)),
     2: !!(websiteData?.hasWhatsApp),
-    3: false,
-    4: false,
-    5: false,
+    3: !!((websiteData?.htmlSnippet || '').match(/offer|discount|promo|deal|free|limited|bonus/i)),
+    4: !!(websiteData && websiteData.hasImages > 3),
+    5: !!(websiteData?.hasServices || (websiteData?.htmlSnippet || '').match(/target|audience|customer|client|buyer/i)),
     6: !!(websiteData?.hasContactForm || websiteData?.hasEmail || websiteData?.hasWhatsApp),
-    7: false,
-    8: false
+    7: !!(websiteData?.hasContactForm || (websiteData?.htmlSnippet || '').match(/follow.?up|crm|newsletter|subscribe|automation/i)),
+    8: !!((websiteData?.htmlSnippet || '').match(/retarget|remarket|pixel|custom.*audience|lookalike/i))
   };
   [0,1,2,3,4,5,6,7,8].forEach(i => {
     state.adChecks[i] = aChecks[i];
@@ -2751,7 +2758,7 @@ ${waNumber ? `<a href="${waLink}" class="wa-float" target="_blank" title="Chat o
   // Save demo file via server
   const slug = bizName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const filename = slug + '.html';
-  fetch('/save-demo', {
+  fetch(`${API_BASE}/save-demo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ filename, html: demoHtml })
@@ -2999,14 +3006,18 @@ Provide a JSON response with these exact fields:
       if (foundData.reviews) summary.push('Reviews');
       if (foundData.social) summary.push('Social');
       const dataStr = summary.length > 0 ? ` Data found: ${summary.join(', ')}.` : ' Limited data found — try adding website URL for better results.';
-      showAIStatus(`Research complete! Score: ${totalScore}/100.${dataStr} Review findings and generate your report.`, 'success');
+      showAIStatus(`Research complete! Score: ${totalScore}/100.${dataStr} Generating report...`, 'success');
     }
 
     showAIProgress(100, 'Complete!');
     setTimeout(() => hideAIProgress(), 1500);
 
+    // Auto-generate report after research
+    closeAIModal();
+    setTimeout(() => generateReport(), 500);
+
     // Track this audit
-    fetch('/track', {
+    fetch(`${API_BASE}/track`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
